@@ -1,4 +1,5 @@
 # Ignore data
 data/raw*
+*.tfrecord
 .history
 models
