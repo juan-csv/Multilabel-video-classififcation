@@ -1,0 +1,7 @@
+
+from utils import utils
+#cmd mkdir -p ~/data/yt8m/video; cd ~/data/yt8m/video
+
+import os
+# execute cmd command
+os.system('ls -la')

@@ -1,0 +1,3 @@
+# Define config dataset
+Dataset:
+  path: 'data/raw/yt8m_2_full'

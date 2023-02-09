@@ -1,0 +1,8 @@
+# Define config dataset
+Dataset:
+  folder: 'data/raw/yt8m_2_full'
+  vocabulary_path: 'data/ 'raw' / 'yt8m_2nd' / 'vocabulary.csv'
+  feature_level: 'video' # video or frame
+
+
+Model:
