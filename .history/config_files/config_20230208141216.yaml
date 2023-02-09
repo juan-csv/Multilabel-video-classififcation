@@ -1,6 +1,0 @@
-# Define config dataset
-Dataset:
-  folder: 'data/raw/yt8m_2_full'
-  feature_level: 'video' # video or frame
-
-Model:
