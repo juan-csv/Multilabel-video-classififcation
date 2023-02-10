@@ -20,9 +20,13 @@ for _ in range(6):
         PATH_ROOT = PATH_ROOT.parent
 sys.path.append(PATH_ROOT.__str__())
 
+# load config
+PATH_CONFIG = PATH_ROOT / 'config_files' / 'config.yaml'
+with open(PATH_CONFIG) as f:
+    config = yaml.safe_load(f)
 
 class DataManagerVideo(torch.utils.data.Dataset):
-    def __init__(self, list_files, PATH_VOCABULARY= PATH_ROOT / 'data' / 'raw' / 'yt8m_2nd' / 'vocabulary.csv'):
+    def __init__(self, list_files, PATH_VOCABULARY= PATH_ROOT / config['vocabulary_path']):
         
         # get number of entites
         vocabulary_df = pd.read_csv(PATH_VOCABULARY)

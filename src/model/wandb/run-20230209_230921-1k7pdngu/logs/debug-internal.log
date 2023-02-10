@@ -1,0 +1,261 @@
+2023-02-09 23:09:21,888 INFO    MainThread:5528 [internal.py:wandb_internal():88] W&B internal server running at pid: 5528, started at: 2023-02-09 23:09:21.886280
+2023-02-09 23:09:21,910 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: check_version
+2023-02-09 23:09:21,911 DEBUG   SenderThread:5528 [sender.py:send():161] send: header
+2023-02-09 23:09:21,911 INFO    WriterThread:5528 [datastore.py:open_for_write():77] open: /Users/macbook/Desktop/OurGlass/VideoTagging/src/model/wandb/run-20230209_230921-1k7pdngu/run-1k7pdngu.wandb
+2023-02-09 23:09:21,914 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:09:21,914 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: check_version
+2023-02-09 23:09:22,370 DEBUG   SenderThread:5528 [sender.py:send():161] send: run
+2023-02-09 23:09:22,907 INFO    SenderThread:5528 [sender.py:_start_run_threads():635] run started: 1k7pdngu with start time 1676002161
+2023-02-09 23:09:22,908 DEBUG   SenderThread:5528 [sender.py:send():161] send: summary
+2023-02-09 23:09:22,908 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file wandb-summary.json with policy end
+2023-02-09 23:09:22,909 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: run_start
+2023-02-09 23:09:22,913 DEBUG   HandlerThread:5528 [meta.py:__init__():34] meta init
+2023-02-09 23:09:22,913 DEBUG   HandlerThread:5528 [meta.py:__init__():48] meta init done
+2023-02-09 23:09:22,913 DEBUG   HandlerThread:5528 [meta.py:probe():190] probe
+2023-02-09 23:09:22,915 DEBUG   HandlerThread:5528 [meta.py:_setup_git():180] setup git
+2023-02-09 23:09:22,961 DEBUG   HandlerThread:5528 [meta.py:_setup_git():187] setup git done
+2023-02-09 23:09:22,962 DEBUG   HandlerThread:5528 [meta.py:_save_code():69] save code
+2023-02-09 23:09:22,983 DEBUG   HandlerThread:5528 [meta.py:_save_code():90] save code done
+2023-02-09 23:09:22,984 DEBUG   HandlerThread:5528 [meta.py:_save_patches():107] save patches
+2023-02-09 23:09:23,121 DEBUG   HandlerThread:5528 [meta.py:_save_patches():149] save patches done
+2023-02-09 23:09:23,122 DEBUG   HandlerThread:5528 [meta.py:_save_pip():52] save pip
+2023-02-09 23:09:23,124 DEBUG   HandlerThread:5528 [meta.py:_save_pip():66] save pip done
+2023-02-09 23:09:23,124 DEBUG   HandlerThread:5528 [meta.py:probe():231] probe done
+2023-02-09 23:09:23,132 DEBUG   SenderThread:5528 [sender.py:send():161] send: files
+2023-02-09 23:09:23,132 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file wandb-metadata.json with policy now
+2023-02-09 23:09:23,134 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file code/src/model/train_video_level.py with policy now
+2023-02-09 23:09:23,135 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file diff.patch with policy now
+2023-02-09 23:09:23,146 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:09:23,147 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:09:23,148 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:09:23,342 DEBUG   SenderThread:5528 [sender.py:send():161] send: history
+2023-02-09 23:09:23,343 DEBUG   SenderThread:5528 [sender.py:send():161] send: summary
+2023-02-09 23:09:23,347 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file wandb-summary.json with policy end
+2023-02-09 23:09:23,352 DEBUG   SenderThread:5528 [sender.py:send():161] send: history
+2023-02-09 23:09:23,352 DEBUG   SenderThread:5528 [sender.py:send():161] send: summary
+2023-02-09 23:09:23,353 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file wandb-summary.json with policy end
+2023-02-09 23:09:38,356 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:09:38,357 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:09:38,357 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:09:51,926 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:09:53,548 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:09:53,549 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:09:53,550 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:10:09,007 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:10:09,008 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:10:09,008 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:10:22,558 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:10:24,201 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:10:24,201 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:10:24,202 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:10:39,712 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:10:39,712 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:10:39,713 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:10:53,159 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:10:55,289 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:10:55,290 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:10:55,290 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:11:10,931 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:11:10,932 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:11:10,932 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:11:23,796 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:11:26,152 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:11:26,153 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:11:26,154 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:11:41,401 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:11:41,402 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:11:41,402 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:11:54,498 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:11:57,213 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:11:57,214 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:11:57,214 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:12:13,171 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:12:13,172 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:12:13,172 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:12:25,056 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:12:28,615 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:12:28,616 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:12:28,616 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:12:43,861 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:12:43,862 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:12:43,862 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:12:55,579 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:12:59,093 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:12:59,093 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:12:59,094 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:13:14,353 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:13:14,354 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:13:14,354 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:13:26,021 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:13:29,537 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:13:29,538 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:13:29,538 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:13:45,977 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:13:45,978 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:13:45,978 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:13:56,646 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:14:01,221 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:14:01,221 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:14:01,222 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:14:16,427 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:14:16,427 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:14:16,428 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:14:27,128 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:14:31,723 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:14:31,723 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:14:31,724 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:14:46,918 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:14:46,918 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:14:46,919 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:14:57,654 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:15:02,743 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:15:02,744 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:15:02,744 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:15:18,062 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:15:18,063 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:15:18,063 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:15:28,304 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:15:33,277 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:15:33,278 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:15:33,278 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:15:48,904 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:15:48,905 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:15:48,905 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:15:58,844 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:16:04,103 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:16:04,104 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:16:04,104 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:16:19,546 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:16:19,546 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:16:19,547 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:16:29,385 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:16:34,759 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:16:34,760 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:16:34,760 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:16:49,971 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:16:49,971 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:16:49,972 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:16:59,976 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:05,318 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:17:05,319 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:17:05,319 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:17:20,528 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:17:20,529 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:17:20,529 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:17:30,588 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:35,971 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:17:35,971 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:17:35,972 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:17:44,124 DEBUG   SenderThread:5528 [sender.py:send():161] send: history
+2023-02-09 23:17:44,125 DEBUG   SenderThread:5528 [sender.py:send():161] send: summary
+2023-02-09 23:17:44,126 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file wandb-summary.json with policy end
+2023-02-09 23:17:44,127 DEBUG   SenderThread:5528 [sender.py:send():161] send: history
+2023-02-09 23:17:44,127 DEBUG   SenderThread:5528 [sender.py:send():161] send: summary
+2023-02-09 23:17:44,128 INFO    SenderThread:5528 [sender.py:_save_file():769] saving file wandb-summary.json with policy end
+2023-02-09 23:17:44,894 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:44,894 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:44,933 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,021 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,021 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,023 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,023 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,127 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,127 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,129 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,129 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,230 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,230 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,232 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,233 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,334 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,334 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,336 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,337 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,440 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,441 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,443 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,443 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,549 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,550 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,550 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,552 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,553 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,654 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,654 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,656 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,657 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,761 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,762 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,764 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,764 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,869 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:17:45,870 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:17:45,872 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:17:45,872 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:17:45,979 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,980 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,981 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,981 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,982 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,982 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,983 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:45,983 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:17:51,177 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:17:51,178 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:17:51,178 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:18:00,344 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:00,344 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:00,346 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:00,346 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:00,448 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:04,925 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:04,925 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:04,927 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:04,927 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:05,031 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:05,410 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:05,410 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:05,412 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:05,412 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:05,514 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:06,368 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:18:06,368 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:18:06,369 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status
+2023-02-09 23:18:07,187 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:07,187 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:07,188 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:07,189 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:07,293 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:07,457 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:07,457 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:07,459 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:07,459 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:07,562 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:09,704 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:09,705 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:09,710 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:09,711 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:09,813 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:10,190 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:10,191 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:10,192 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:10,193 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:10,295 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:11,737 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:11,737 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:11,739 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:11,739 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:11,840 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:13,622 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:13,622 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:13,623 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:13,624 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:13,729 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:13,807 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: resume
+2023-02-09 23:18:13,807 INFO    HandlerThread:5528 [handler.py:handle_request_resume():420] starting system metrics thread
+2023-02-09 23:18:13,808 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: pause
+2023-02-09 23:18:13,809 INFO    HandlerThread:5528 [handler.py:handle_request_pause():425] stopping system metrics thread
+2023-02-09 23:18:13,913 DEBUG   SenderThread:5528 [sender.py:send():161] send: stats
+2023-02-09 23:18:21,855 DEBUG   HandlerThread:5528 [handler.py:handle_request():101] handle_request: status
+2023-02-09 23:18:21,855 DEBUG   SenderThread:5528 [sender.py:send():161] send: request
+2023-02-09 23:18:21,856 DEBUG   SenderThread:5528 [sender.py:send_request():170] send_request: status

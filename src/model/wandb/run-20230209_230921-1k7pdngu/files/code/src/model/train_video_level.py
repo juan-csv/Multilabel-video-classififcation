@@ -27,7 +27,7 @@ from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_a
 
 # Functions
 def instance_dataloaders(PATH_DATA, config):
-    print("Creating train dataloader ...")
+    print("Creating dataloaders ...")
     train_pattern_files = PATH_DATA / 'train*.tfrecord'
     list_train_files = glob.glob( train_pattern_files.__str__() )
 
@@ -150,7 +150,7 @@ class TrainVideoTagging():
     
     def early_stoping(self, loss_test):
         if self.epoch > 0: 
-            if loss_test < self.best_loss:
+            if loss_test < self.loss_test_prev:
                 # save and update 
                 self.save_model()
                 self.best_loss = loss_test
@@ -165,7 +165,6 @@ class TrainVideoTagging():
         else: # first epoch
             self.best_loss = 0
             self.patience_counter = 0
-            self.save_model()
             
         return False
 

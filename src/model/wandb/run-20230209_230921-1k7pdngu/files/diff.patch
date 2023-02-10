@@ -1,0 +1,23 @@
+diff --git a/src/model/train_video_level.py b/src/model/train_video_level.py
+index 8bbf2a2..3c215e1 100644
+--- a/src/model/train_video_level.py
++++ b/src/model/train_video_level.py
+@@ -126,7 +126,8 @@ class TrainVideoTagging():
+ 
+ 
+     def train(self, train_dataloader, test_dataloader):
+-
++        print( f"training on [{self.device}]")
++        print("---------------------------------\n")
+         for epoch in range(self.EPOCHS):
+             self.epoch = epoch
+             self.model.train()
+@@ -188,7 +189,7 @@ class TrainVideoTagging():
+                     config = self.config['Train'],
+                     resume = False,
+                     tags = [self.config_parameter_folders['LEVEL_FEATURE'], self.config_parameter_folders['MODEL']],
+-                    note = self.config_parameter_folders['NOTE'],
++                    notes = self.config_parameter_folders['NOTE'],
+                     save_code = True
+                     )
+ 

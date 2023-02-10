@@ -1,0 +1,33 @@
+{
+    "os": "macOS-10.16-x86_64-i386-64bit",
+    "python": "3.8.5",
+    "heartbeatAt": "2023-02-10T04:09:22.914102",
+    "startedAt": "2023-02-10T04:09:21.862194",
+    "docker": null,
+    "cpu_count": 16,
+    "cuda": null,
+    "args": [
+        "--ip=127.0.0.1",
+        "--stdin=9003",
+        "--control=9001",
+        "--hb=9000",
+        "--Session.signature_scheme=\"hmac-sha256\"",
+        "--Session.key=b\"771a3900-1e9f-433b-926d-9c567f863367\"",
+        "--shell=9002",
+        "--transport=\"tcp\"",
+        "--iopub=9004",
+        "--f=/Users/macbook/Library/Jupyter/runtime/kernel-v2-95118BdoIMAbd5kR0.json"
+    ],
+    "state": "running",
+    "program": "/Users/macbook/Desktop/OurGlass/VideoTagging/src/model/train_video_level.py",
+    "codePath": "src/model/train_video_level.py",
+    "git": {
+        "remote": "https://github.com/juan-csv/Multilabel-video-classififcation",
+        "commit": "7bb4b322416da3e0bf0754c560d9e44da66d2d32"
+    },
+    "email": "juancalopez12318@gmail.com",
+    "root": "/Users/macbook/Desktop/OurGlass/VideoTagging",
+    "host": "MacBook-Pro-2.local",
+    "username": "macbook",
+    "executable": "/Users/macbook/opt/anaconda3/bin/python"
+}
