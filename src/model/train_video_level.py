@@ -9,6 +9,8 @@ import numpy as np
 from torch import nn
 from tqdm import tqdm
 from pathlib import Path
+from torch.utils.data import DataLoader
+
 
 # Add root path
 PATH_ROOT = Path.cwd()
@@ -23,6 +25,7 @@ sys.path.append(PATH_ROOT.__str__())
 # Local imports
 from utils.utils import current_tim2id
 from src.data.torch_dataloader import DataManagerVideo
+from src.data.torch_dataloader_v2 import YoutubeVideoDataset
 from src.arquitectures.pt_models_video_level import LinearModel
 from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_at_equal_recall_rate
 
@@ -41,6 +44,25 @@ def instance_dataloaders(PATH_DATA, config):
     pytorch_dataset = DataManagerVideo( list_test_files )
     test_dataloader = torch.utils.data.DataLoader(pytorch_dataset, batch_size=config['Train']['bs'], num_workers=0)
 
+    return train_dataloader, test_dataloader
+
+def instance_dataloaders2(PATH_DATA, config):
+    
+    print("Creating train dataloader ...")
+    train_pattern_files = PATH_DATA / 'train*.tfrecord'
+    list_train_files = glob.glob( train_pattern_files.__str__() )
+
+    test_pattern_files = PATH_DATA / 'test*.tfrecord'
+    list_test_files = glob.glob( test_pattern_files.__str__() )
+    
+    pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=config['Train']['epochs'])
+    train_dataloader = DataLoader(pytorch_dataset, num_workers=0,
+                        batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
+    
+    pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=config['Train']['epochs'])
+    test_dataloader = DataLoader(pytorch_dataset, num_workers=0,
+                        batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
+    
     return train_dataloader, test_dataloader
 
 # Load config
@@ -77,12 +99,12 @@ class TrainVideoTagging():
         gap             = 0
         hit_at_one      = 0
         perr            = 0
-        with tqdm(dataloader, total=len(dataloader), desc=f"{MODE}ing [{self.MODEL}]...  Epoch {self.epoch+1}/{self.EPOCHS}", unit='batch') as pbar:
+        with tqdm(dataloader, desc=f"{MODE}ing [{self.MODEL}]...  Epoch {self.epoch+1}/{self.EPOCHS}", unit='batch') as pbar:
             for batch_index, features in enumerate(pbar):
                 
                 # Set features to device
                 video_emb,  audio_emb, target = features
-                video_emb,  audio_emb, target = video_emb.to(self.device), audio_emb.to(self.device), target.to(self.device)
+                video_emb,  audio_emb, target = video_emb.to(self.device).float(), audio_emb.to(self.device).float(), target.to(self.device).float()
                 
                 # Reset gradient
                 self.optimizer.zero_grad()
@@ -236,7 +258,7 @@ def main():
 
 
     # Instance dataloaders
-    train_dataloader, test_dataloader = instance_dataloaders( PATH_DATA, config )
+    train_dataloader, test_dataloader = instance_dataloaders2( PATH_DATA, config )
 
     # Instance training
     training_video_tagging = TrainVideoTagging(
