@@ -26,7 +26,7 @@ with open(PATH_CONFIG) as f:
     config = yaml.safe_load(f)
 
 class DataManagerVideo(torch.utils.data.Dataset):
-    def __init__(self, list_files, PATH_VOCABULARY= PATH_ROOT / config['vocabulary_path']):
+    def __init__(self, list_files, PATH_VOCABULARY= PATH_ROOT / config['Dataset']['vocabulary_path']):
         
         # get number of entites
         vocabulary_df = pd.read_csv(PATH_VOCABULARY)

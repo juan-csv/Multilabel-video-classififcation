@@ -69,15 +69,15 @@ if __name__ == '__main__':
     # Download data (executing CMD command)
     LEVEL_FEATURE = 'frame' if FRAME_LEVEL else 'video'
     
-    print("Dowloading training data ...")
-    cmd = f"curl data.yt8m.org/download.py | partition=2/{LEVEL_FEATURE}/train mirror=us python"
-    os.system(cmd)
-    print("Finishing training data\n--------------------------------------------------------")
+    # print("Dowloading training data ...")
+    # cmd = f"curl data.yt8m.org/download.py | partition=2/{LEVEL_FEATURE}/train mirror=us python"
+    # os.system(cmd)
+    # print("Finishing training data\n--------------------------------------------------------")
 
-    print("Dowloading validation data ...")
-    cmd = f"curl data.yt8m.org/download.py | partition=2/{LEVEL_FEATURE}/validate mirror=us python"
-    os.system(cmd)
-    print("Finishing validation data\n--------------------------------------------------------")
+    # print("Dowloading validation data ...")
+    # cmd = f"curl data.yt8m.org/download.py | partition=2/{LEVEL_FEATURE}/validate mirror=us python"
+    # os.system(cmd)
+    # print("Finishing validation data\n--------------------------------------------------------")
     
     print("Downloading testing data ...")
     cmd = f"curl data.yt8m.org/download.py | partition=2/{LEVEL_FEATURE}/test mirror=us python"

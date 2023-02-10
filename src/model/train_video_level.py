@@ -33,7 +33,7 @@ def instance_dataloaders(PATH_DATA, config):
 
     test_pattern_files = PATH_DATA / 'test*.tfrecord'
     # TODO: change for test
-    list_test_files = glob.glob( train_pattern_files.__str__() )
+    list_test_files = glob.glob( test_pattern_files.__str__() )
 
     pytorch_dataset = DataManagerVideo( list_train_files )
     train_dataloader = torch.utils.data.DataLoader(pytorch_dataset, batch_size=config['Train']['bs'], num_workers=0, shuffle=True)
@@ -176,8 +176,9 @@ class TrainVideoTagging():
         if not os.path.exists( PATH_SAVE_MODEL ):
             os.makedirs( PATH_SAVE_MODEL )
             
+        full_PATH = (PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}').__str__()
         torch.save(self.model.state_dict(), PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}.pth')
-        print(f"Model saved in --------------------> {PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}'}")
+        print(f"Model saved in --------------------> {full_PATH}")
 
     def initialize_tracking_experiment(self):
         # initalize wandb with token
