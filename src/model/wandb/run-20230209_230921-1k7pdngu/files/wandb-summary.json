@@ -1,1 +1,0 @@
-{"loss_test": 1.01831536640384, "gap_test": 1.5240433393714166, "hit_at_one_test": 1.732421875, "perr_test": 1.5682137645882763, "_runtime": 503, "_timestamp": 1676002664, "_step": 3, "loss_train": 1.1069948170770658, "gap_train": 1.3839859044768483, "hit_at_one_train": 1.68115234375, "perr_train": 1.525916789509319}
