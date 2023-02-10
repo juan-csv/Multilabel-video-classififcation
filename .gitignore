@@ -3,3 +3,4 @@ data/raw*
 *.tfrecord
 .history
 models
+__pycache__

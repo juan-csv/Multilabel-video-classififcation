@@ -1,7 +1,8 @@
 import os
 import pandas as pd
+from dateutil import tz
 from pathlib import Path
-
+from datetime import datetime
 
 def get_root_path():
     """
@@ -17,6 +18,15 @@ def get_root_path():
             PATH_ROOT = PATH_ROOT.parent
     return PATH_ROOT
 
+def current_tim2id():
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.utcnow()
+    utc = utc.replace(tzinfo=from_zone)
+    local = utc.astimezone(to_zone)
+    DATE_TIME = local.strftime('%m_%d_%H_%M')
+    return DATE_TIME
+
 class Map_index2label():
     def __init__(self, PATH_VOCABULARY):
         # load vocabulary
@@ -29,3 +39,5 @@ class Map_index2label():
             return self.label_mapping[index]
         else:
             return ''
+
+
