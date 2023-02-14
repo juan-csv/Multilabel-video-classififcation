@@ -26,7 +26,7 @@ sys.path.append(PATH_ROOT.__str__())
 from utils.utils import current_tim2id
 from src.data.torch_dataloader import DataManagerVideo
 from src.data.torch_dataloader_v2 import YoutubeVideoDataset
-from src.arquitectures.pt_models_video_level import LinearModel
+from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo
 from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_at_equal_recall_rate
 
 # Functions
@@ -55,11 +55,11 @@ def instance_dataloaders2(PATH_DATA, config):
     test_pattern_files = PATH_DATA / 'test*.tfrecord'
     list_test_files = glob.glob( test_pattern_files.__str__() )
     
-    pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=config['Train']['epochs'])
+    pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=config['Train']['epochs'], USE_FEATURES=config['Dataset']['USE_FEATURES'])
     train_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
-    pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=config['Train']['epochs'])
+    pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=config['Train']['epochs'], USE_FEATURES=config['Dataset']['USE_FEATURES'])
     test_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
@@ -71,7 +71,6 @@ def load_config():
     with open( PATH_CONFIG ) as f:
         config = yaml.safe_load( f )
         
-    print(f"Config;\n--------------------\n{config}\n")
     return config
 
 
@@ -83,6 +82,7 @@ class TrainVideoTagging():
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.EPOCHS = self.config['Train']['epochs']
         self.MODEL = self.config_parameter_folders['MODEL']
+        self.USE_FEATURES = self.config['Dataset']['USE_FEATURES']
         # Set model to device
         self.model = model
         model.to(self.device)
@@ -103,14 +103,21 @@ class TrainVideoTagging():
             for batch_index, features in enumerate(pbar):
                 
                 # Set features to device
-                video_emb,  audio_emb, target = features
-                video_emb,  audio_emb, target = video_emb.to(self.device).float(), audio_emb.to(self.device).float(), target.to(self.device).float()
+                if 'audio' in self.USE_FEATURES:
+                    video_emb,  audio_emb, target = features
+                    video_emb,  audio_emb, target = video_emb.to(self.device).float(), audio_emb.to(self.device).float(), target.to(self.device).float()
+                else:
+                    video_emb, target = features
+                    video_emb, target = video_emb.to(self.device).float(), target.to(self.device).float()
                 
                 # Reset gradient
                 self.optimizer.zero_grad()
                 
                 # Get predictions
-                pred = self.model( video_emb, audio_emb )
+                if 'audio' in self.USE_FEATURES:
+                    pred = self.model( video_emb, audio_emb )
+                else:
+                    pred = self.model( video_emb )
                 
                 # Get loss
                 loss = self.criterion( pred, target )
@@ -138,6 +145,13 @@ class TrainVideoTagging():
                                     hit_at_one=hit_at_one/(batch_index+1),
                                     perr=perr/(batch_index+1)
                 )
+                
+                # Save model each 1000 steps
+                if batch_index % 50e3 == 0:
+                    self.batch_index = batch_index
+                    self.loss_mean = loss_mean/(batch_index+1)
+                    self.save_model()
+                    
                 
         return {
             f'loss_{MODE}': loss_mean / batch_index + 1,
@@ -198,7 +212,7 @@ class TrainVideoTagging():
         if not os.path.exists( PATH_SAVE_MODEL ):
             os.makedirs( PATH_SAVE_MODEL )
             
-        FULL_NAME = (PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}').__str__()
+        FULL_NAME = (PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}_epoch_{self.epoch}_batch_{self.batch_index}_loss_{self.loss_mean:.4f}').__str__()
         torch.save(self.model.state_dict(), f'{FULL_NAME}.pth')
         # save config as json
         with open(f'{FULL_NAME}.json', 'w') as f:
@@ -228,7 +242,8 @@ def main():
     # Arguments
     RUN_ID = current_tim2id()
     LEVEL_FEATURE = 'video'
-    NAME_EXPERIMENT = f'{RUN_ID}_baseline_{LEVEL_FEATURE}-level'
+    FEATURES = ['rgb'] # ['audio', 'rgb']
+    NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
     NAME_PROJECT = 'VideoTagging_YT8M'
     MODEL = 'LinearModel'
     NOTE = 'Baseline'
@@ -251,8 +266,13 @@ def main():
         'PATH_SAVE_MODEL': PATH_SAVE_MODEL,
     }
     
+    # Update config
+    config['Dataset']['USE_FEATURES'] = FEATURES    
+    print(f"Config;\n--------------------\n{config}\n")
+
+    
     # Instance model
-    model = LinearModel( config )
+    model = LinearModelVideo( config )
 
     # TODO: Search checkpooint model
 

@@ -28,7 +28,7 @@ with open(PATH_CONFIG) as f:
 
 
 
-class LinearModel(torch.nn.Module):
+class LinearModelVideoAudio(torch.nn.Module):
     def __init__(self, config) -> None:
         super().__init__()
         
@@ -58,6 +58,38 @@ class LinearModel(torch.nn.Module):
         # concatenate embeddings
         x = torch.cat( [video_emb, audio_emb], axis=-1)
         emb = self.activation( self.emb(x) )
+        emb = self.batchnorm( emb )
+        out = self.out(emb)
+        return out
+
+class LinearModelVideo(torch.nn.Module):
+    def __init__(self, config) -> None:
+        super().__init__()
+        
+        self.N_FEATURES_VIDEO = config['Dataset']['parameters']['N_FEATURES_VIDEO']
+        self.N_CLASSES =        config['Dataset']['parameters']['N_CLASSES']
+        
+        in_features = self.N_FEATURES_VIDEO
+        # define layers
+        
+        # Embedding 
+        self.emb = Linear(in_features=in_features, out_features=2024)
+        
+        # Activations
+        self.activation = nn.ReLU()
+        
+        # Batchnorm
+        self.batchnorm = nn.BatchNorm1d(num_features=2024)
+        
+        # out layer
+        self.out = nn.Sequential(
+            nn.Linear(in_features=2024, out_features=self.N_CLASSES),
+            nn.Sigmoid()
+        )
+        
+    def forward(self, video_emb):
+        # concatenate embeddings
+        emb = self.activation( self.emb(video_emb) )
         emb = self.batchnorm( emb )
         out = self.out(emb)
         return out

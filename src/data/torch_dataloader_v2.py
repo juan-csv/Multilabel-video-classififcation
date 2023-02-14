@@ -22,6 +22,15 @@ for _ in range(6):
         PATH_ROOT = PATH_ROOT.parent
 sys.path.append(PATH_ROOT.__str__())
 
+# load config
+PATH_CONFIG = PATH_ROOT / 'config_files' / 'config.yaml'
+with open( PATH_CONFIG ) as f:
+    config = yaml.safe_load( f )
+    
+# Paths and parameters
+PATH_VOCAB = PATH_ROOT / config['Dataset']['vocabulary_path']
+N_CLASSES = config['Dataset']['parameters']['N_CLASSES']
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 
@@ -46,14 +55,16 @@ def Dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
 
 class YoutubeSegmentDataset(IterableDataset):
     def __init__(self, file_paths, seed=939, debug=False,
-                 vocab_path="/Users/macbook/Desktop/OurGlass/VideoTagging/data/vocabulary.csv",
-                 epochs=1, max_examples=None, offset=0):
+                 vocab_path=PATH_VOCAB,
+                 epochs=1, max_examples=None, offset=0,
+                 USE_FEATURES= ['rgb', 'audio'] ):
         super(YoutubeSegmentDataset).__init__()
         print("Offset:", offset)
         self.file_paths = file_paths
         self.seed = seed
         self.debug = debug
         self.max_examples = max_examples
+        self.USE_FEATURES = USE_FEATURES
         vocab = pd.read_csv(vocab_path)
         self.label_mapping = {
             label: index for label, index in zip(vocab["Index"], vocab.index)
@@ -93,15 +104,15 @@ class YoutubeSegmentDataset(IterableDataset):
         segment_labels = np.array([
             self.label_mapping[x] for x in segment_labels])
 
-        # Negative Mining: Shape (3862)
+        # Negative Mining: Shape (N_CLASSES)
         if self.debug:
             if not vid_labels_encoded:
                 print(segment_labels, vid_labels)
             else:
                 print("Passed")
-        negative_mask = np.zeros(3862)
+        negative_mask = np.zeros(N_CLASSES)
         negative_mask[np.array(
-            list(set(range(3862)) - vid_labels_encoded - set(segment_labels)))] = 1
+            list(set(range(N_CLASSES)) - vid_labels_encoded - set(segment_labels)))] = 1
 
         # Frames. Shape: (frames, 1024)
         tmp = video_features.feature_list['rgb'].feature
@@ -172,7 +183,7 @@ class YoutubeSegmentDataset(IterableDataset):
             torch.from_numpy(segment_labels).unsqueeze(1),
             # (n_segments, 1)
             torch.from_numpy(segment_scores).unsqueeze(1),
-            # (3862,)
+            # (N_CLASSES,)
             torch.from_numpy(negative_mask)
         )
 
@@ -226,15 +237,15 @@ class YoutubeVideoDataset(YoutubeSegmentDataset):
             # print("Skipped")
             return None, None
 
-        # Expanded Lables: Shape (3862)
-        labels = np.zeros(3862)
+        # Expanded Lables: Shape (N_CLASSES)
+        labels = np.zeros(N_CLASSES)
         labels[list(vid_labels_encoded)] = 1
 
         # Frames. Shape: (frames, 1024)
-        frames = np.array(context.feature['mean_audio'].float_list.value)
+        frames = np.array(context.feature['mean_rgb'].float_list.value)
 
         # Audio. Shape: (frames, 128)
-        audio = np.array(context.feature['mean_rgb'].float_list.value)
+        audio = np.array(context.feature['mean_audio'].float_list.value)
 
         # Combine: shape(frames, 1152)
         features = torch.from_numpy(np.concatenate([frames, audio], axis=-1))
@@ -245,21 +256,38 @@ class YoutubeVideoDataset(YoutubeSegmentDataset):
             print(features.size(0))
             print("=" * 20 + "\n")
 
-        return (
-            torch.from_numpy(frames),
-            torch.from_numpy(audio),
-            # (3862,)
-            torch.from_numpy(labels)
-        )
+        if 'audio' in self.USE_FEATURES:
+            return (
+                torch.from_numpy(frames),
+                torch.from_numpy(audio),
+                torch.from_numpy(labels)
+            )
+        else:
+            return (
+                torch.from_numpy(frames),
+                torch.from_numpy(labels)
+            )
+            
 
     def _iterate_through_dataset(self, tf_dataset):
         for row in tf_dataset:
-            frames, audio, labels = (
-                self.prepare_one_sample(row)
-            )
-            if frames is None:
-                continue
-            yield frames, audio, labels
+            if 'audio' in self.USE_FEATURES:
+                frames, audio, labels = (
+                    self.prepare_one_sample(row)
+                )
+                
+                if frames is None:
+                    continue
+                
+                yield frames, audio, labels
+            else:
+                frames, labels = (
+                    self.prepare_one_sample(row)
+                )
+                
+                if frames is None:
+                    continue
+                yield frames, labels
 
 
 class YoutubeTestDataset(YoutubeSegmentDataset):
@@ -430,10 +458,24 @@ if __name__ == "__main__":
     filepaths = list_train_files
     
 
-    dataset = YoutubeVideoDataset(filepaths, epochs=10)
-    loader = DataLoader(dataset, num_workers=4,
+    USE_FEATURES=['rgb'] 
+    dataset = YoutubeVideoDataset(filepaths, epochs=10, USE_FEATURES=USE_FEATURES)
+    loader = DataLoader(dataset, num_workers=0,
                         batch_size=16)#, collate_fn=collate_videos)
-    for i, (frames, audio, labels) in enumerate(loader):
+    
+    
+    NUM_BATCHES_TRAIN = 0
+    for _ in loader:
+        NUM_BATCHES_TRAIN += 1
+    
+    # iterate through loader
+    
+    for i, data in enumerate(loader):
         if i == 1000:
-            print(frames.size(), audio.size() ,labels.size())
+            if 'audio' in USE_FEATURES:
+                frames, audio, labels = data
+                print(frames.size(), audio.size() ,labels.size())
+            else:
+                frames, labels = data
+                print(frames.size(), labels.size())
             break
