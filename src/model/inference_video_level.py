@@ -1,7 +1,3 @@
-"""
-
-"""
-
 import os, sys
 from pathlib import  Path
 # Add root path
@@ -33,7 +29,7 @@ with open( PATH_CONFIG ) as f:
 
 
 
-def get_path_model(FOLDERS_SAVE_MODEL, RUN_ID):
+def get_path_model(FOLDERS_SAVE_MODEL, LEVEL_FEATURE, MODEL, RUN_ID):
     PATH_SAVE_MODEL = FOLDERS_SAVE_MODEL / LEVEL_FEATURE / MODEL / RUN_ID
     # load model
     list_files = [f.split('.pth')[0] for f in os.listdir(PATH_SAVE_MODEL) if f.endswith('.pth')]
@@ -77,7 +73,10 @@ class ModelTag():
             #model = LinearModelVideoAudio( config )
         #elif config['Model']['parameters']['model'] == 'LinearModelVideo':
         self.model = LinearModelVideo( config )
-        self.model.load_state_dict(torch.load(PATH_MODEL + '.pth' ))
+        if torch.cuda.is_available():
+            self.model.load_state_dict(torch.load(PATH_MODEL + '.pth' ))
+        else:
+            self.model.load_state_dict(torch.load(PATH_MODEL + '.pth' , map_location=torch.device('cpu')))
             
         # Turn to inference mode
         self.model.eval()
@@ -154,7 +153,7 @@ if __name__ == '__main__':
     NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
     MODEL = 'LinearModel'
     FOLDERS_SAVE_MODEL =        PATH_ROOT / config['Model']['folder']
-    PATH_MODEL = get_path_model(FOLDERS_SAVE_MODEL, RUN_ID)
+    PATH_MODEL = get_path_model(FOLDERS_SAVE_MODEL, LEVEL_FEATURE, MODEL, RUN_ID)
     # Load model
     model_video = ModelTag(PATH_MODEL)
 

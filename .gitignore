@@ -5,3 +5,5 @@ data/raw*
 models
 __pycache__
 wandb
+.vscode
+*.pyc

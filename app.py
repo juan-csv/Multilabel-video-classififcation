@@ -32,13 +32,13 @@ FEATURES = ['rgb'] # ['audio', 'rgb']
 NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
 MODEL = 'LinearModel'
 FOLDERS_SAVE_MODEL =        PATH_ROOT / config['Model']['folder']
-PATH_MODEL = get_path_model(FOLDERS_SAVE_MODEL, RUN_ID)
+PATH_MODEL = get_path_model(FOLDERS_SAVE_MODEL, LEVEL_FEATURE, MODEL, RUN_ID)
 # Load model
 model_video = ModelTag(PATH_MODEL)
 
 
 # Set page title
-st.set_page_config(page_title="YouTube Video Embedding")
+st.set_page_config(page_title="Classification content video")
 
 # Define function to get video ID from YouTube URL
 def get_video_id(url):
@@ -75,7 +75,7 @@ if video_url:
                 Frames, N_FRAMES, FPS = get_video_frames(video_id)
                 Frames = postporcess_video( Frames, N_FRAMES, FPS)
             
-            with st.spinner("Getting video ..."):
+            with st.spinner("Calculating categories ..."):
                 label_pred, score_pred = model_video(Frames)
 
             # show the categories
