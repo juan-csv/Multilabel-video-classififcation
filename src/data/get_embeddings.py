@@ -27,7 +27,7 @@ for _ in range(6):
 sys.path.append(PATH_ROOT.__str__())
 
 import tarfile
-import numpy
+import numpy as np
 from six.moves import urllib
 #import tensorflow as tf
 import tensorflow.compat.v1 as tf
@@ -108,16 +108,46 @@ class YouTube8MFeatureExtractor(object):
         return frame_features
     
     def extract_frame_level_features(self, frame_rgb, apply_pca=True):
-        frame_embeding_level = []
-        for frame in frame_rgb:
-            rgb_emb = self.extract_rgb_frame_features(frame, apply_pca=apply_pca)
-            frame_embeding_level.append(rgb_emb)
-        frame_embeding_level = np.array(frame_embeding_level)
+        """
+
+        Args:
+            frame_rgb (np.array): shape (bs, n_frames, height, width, channels)
+            apply_pca (bool, optional):  Defaults to True.
+
+        Returns:
+            frame_embeding_level (np.array): shape (bs, n_frames, 1024)
+        """
+        if len(frame_rgb.shape) == 4: # (n_frames, height, width, channels)
+            frame_rgb = np.expand_dims(frame_rgb, axis=0)
+        
+        BS, N_FRAMES, _, _, _ = frame_rgb.shape
+        N_FEATS_VIDEO = 1024
+        
+        # Instance output
+        frame_embeding_level = np.zeros([BS, N_FRAMES, N_FEATS_VIDEO])
+        
+        # Iterate over batch
+        for i_bs in range(BS):
+            frame_batch = frame_rgb[i_bs]
+            frame_embeding_level[i_bs] = np.array( list(map(lambda x: self.extract_rgb_frame_features(x, apply_pca=apply_pca), frame_batch)) )
+                
         return frame_embeding_level
+        
     
     def extract_video_level_features(self, frame_rgb, apply_pca=True):
-        frame_embeding_level = self.extract_frame_level_features(frame_rgb, apply_pca=apply_pca)
-        video_embeding_level = np.mean(frame_embeding_level, axis=0)
+        """
+
+        Args:
+            frame_rgb (np.array): shape (bs, n_frames, height, width, channels)
+            apply_pca (bool, optional):  Defaults to True
+        Returns:
+            video_embeding_level (np.array): shape (bs, 1024)
+        """
+        
+        frame_embeding_level = self.extract_frame_level_features(frame_rgb, apply_pca=apply_pca) # (bs, n_frames, 1024)
+        
+        # reduce frame axis
+        video_embeding_level = np.mean(frame_embeding_level, axis=1)
         return video_embeding_level
 
     def apply_pca(self, frame_features):
@@ -135,7 +165,7 @@ class YouTube8MFeatureExtractor(object):
             self.pca_eigenvecs).reshape((1024,))
 
         # Whiten
-        feats /= numpy.sqrt(self.pca_eigenvals + 1e-4)
+        feats /= np.sqrt(self.pca_eigenvals + 1e-4)
         return feats
 
     def _maybe_download(self, url):
@@ -178,11 +208,11 @@ class YouTube8MFeatureExtractor(object):
                       name='pca_final_feature')
 
     def _load_pca(self):
-        self.pca_mean = numpy.load(os.path.join(
+        self.pca_mean = np.load(os.path.join(
             self._model_dir, 'mean.npy'))[:, 0]
-        self.pca_eigenvals = numpy.load(
+        self.pca_eigenvals = np.load(
             os.path.join(self._model_dir, 'eigenvals.npy'))[:1024, 0]
-        self.pca_eigenvecs = numpy.load(
+        self.pca_eigenvecs = np.load(
             os.path.join(self._model_dir, 'eigenvecs.npy')).T[:, :1024]
 
 if __name__ == "__main__":

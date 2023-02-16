@@ -267,7 +267,10 @@ def main():
     }
     
     # Update config
-    config['Dataset']['USE_FEATURES'] = FEATURES    
+    config['Dataset']['USE_FEATURES'] = FEATURES
+    config['Dataset']['PATH_DATA'] = PATH_DATA
+    config['Model']['model'] = MODEL
+        
     print(f"Config;\n--------------------\n{config}\n")
 
     
