@@ -46,15 +46,27 @@ def instance_dataloaders(PATH_DATA, config):
 
     return train_dataloader, test_dataloader
 
-def instance_dataloaders2(PATH_DATA, config):
+def get_subsample_files(list_files, PERCENTAGE):
+    # Do shuffle
+    list_files = np.random.shuffle(list_files)
+    # take a percentage
+    list_files = list_files[:int(len(list_files)*PERCENTAGE)]
+    
+    return list_files
+        
+
+def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.2):
     
     print("Creating train dataloader ...")
     train_pattern_files = PATH_DATA / 'train*.tfrecord'
+    
     list_train_files = glob.glob( train_pattern_files.__str__() )
-
+    list_train_files = get_subsample_files(list_train_files, PERCENTAGE)    
+    
     test_pattern_files = PATH_DATA / 'test*.tfrecord'
     list_test_files = glob.glob( test_pattern_files.__str__() )
-    
+    list_test_files = get_subsample_files(list_test_files, PERCENTAGE)    
+
     pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=config['Train']['epochs'], USE_FEATURES=config['Dataset']['USE_FEATURES'])
     train_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
@@ -151,7 +163,6 @@ class TrainVideoTagging():
                     self.batch_index = batch_index
                     self.loss_mean = loss_mean/(batch_index+1)
                     self.save_model()
-                    
                 
         return {
             f'loss_{MODE}': loss_mean / batch_index + 1,
@@ -167,6 +178,14 @@ class TrainVideoTagging():
         for epoch in range(self.EPOCHS):
             self.epoch = epoch
             self.model.train()
+            
+            # Instance dataloader here
+            # use a subsample of the list train
+            
+            # use subsample of the liste test too
+            #train_dataloader, test_dataloader = instance_dataloaders2( PATH_DATA, config )
+            
+            
             loss_train =  self.batch_forward(train_dataloader, MODE='train')
 
             self.model.eval()
@@ -291,7 +310,6 @@ def main():
     
     # Training
     training_video_tagging.train(train_dataloader, test_dataloader)
-    # TODO: Add callback for model checkpoint
 
     # TODO: Add callback for scheduler
 
