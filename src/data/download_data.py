@@ -75,7 +75,7 @@ if __name__ == '__main__':
     os.chdir(FOLDER_TO_SAVE + os.path.sep + 'train')
     # print saving folder
     print(f"Saving data in:     {os.getcwd()}\n")
-    cmd = f"curl data.yt8m.org/download.py | partition={YOUTUBE_DATASET_VERSION}/{LEVEL_FEATURE}/train mirror=us python"
+    cmd = f"curl data.yt8m.org/download.py | shard=1,100 partition={YOUTUBE_DATASET_VERSION}/{LEVEL_FEATURE}/train mirror=us python"
     os.system(cmd)
     print("Finishing training data\n--------------------------------------------------------")
 
