@@ -1,3 +1,4 @@
+import torch
 import os
 import sys
 import yaml
@@ -5,7 +6,6 @@ import logging
 from pathlib import Path
 
 import tensorflow as tf
-import torch
 import torch.nn as nn
 from torch.utils.data import IterableDataset, DataLoader
 import numpy as np
@@ -449,25 +449,33 @@ if __name__ == "__main__":
     FOLDER_LEVEL_FEATURE = 'frame_sample' if LEVEL_FEATURE=='frame' else 'video_sample'
 
     # Define paths
-    PATH_DATA = PATH_ROOT / config['Dataset']['folder'] / FOLDER_LEVEL_FEATURE
+    PATH_DATA = PATH_ROOT / config['Dataset']['folder'] / '2' / LEVEL_FEATURE
     # List all tfrecords
-    train_pattern_files = PATH_DATA / 'train*.tfrecord'
-    
-    
+    train_pattern_files = PATH_DATA / 'train' / '*.tfrecord'    
+    test_pattern_files = PATH_DATA / 'test' / '*.tfrecord'
+    validate_pattern_files = PATH_DATA / 'validate' / '*.tfrecord'
+
     list_train_files = glob.glob( train_pattern_files.__str__() )
-    filepaths = list_train_files
+    list_test_files = glob.glob( test_pattern_files.__str__() )
+    list_validate_files = glob.glob( validate_pattern_files.__str__() )
+    
+    filepaths = list_validate_files[:3]
     
 
     USE_FEATURES=['rgb'] 
-    dataset = YoutubeVideoDataset(filepaths, epochs=10, USE_FEATURES=USE_FEATURES)
+    dataset = YoutubeVideoDataset(filepaths, epochs=2, USE_FEATURES=USE_FEATURES)
     loader = DataLoader(dataset, num_workers=0,
-                        batch_size=16)#, collate_fn=collate_videos)
+                        batch_size=1024, prefetch_factor=2)#, collate_fn=collate_videos)
     
-    
+    from tqdm import tqdm
     NUM_BATCHES_TRAIN = 0
-    for _ in loader:
-        NUM_BATCHES_TRAIN += 1
-    
+
+    with tqdm(loader, desc=f"couning...  ", unit='batch') as pbar:
+        for batch_index, _ in enumerate(pbar):
+            NUM_BATCHES_TRAIN += 1
+            
+    print(NUM_BATCHES_TRAIN, batch_index)
+
     # iterate through loader
     
     for i, data in enumerate(loader):
@@ -479,3 +487,9 @@ if __name__ == "__main__":
                 frames, labels = data
                 print(frames.size(), labels.size())
             break
+        
+# import train test split
+from sklearn.model_selection import train_test_split
+l = list(range(1,100))
+
+train, test = train_test_split(l, test_size=0.2, random_state=42)

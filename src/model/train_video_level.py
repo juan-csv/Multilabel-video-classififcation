@@ -5,11 +5,13 @@ import json
 import yaml
 import torch
 import wandb
+import random
 import numpy as np
 from torch import nn
 from tqdm import tqdm
 from pathlib import Path
 from torch.utils.data import DataLoader
+from sklearn.model_selection import train_test_split
 
 
 # Add root path
@@ -30,48 +32,41 @@ from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, Linea
 from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_at_equal_recall_rate
 
 # Functions
-def instance_dataloaders(PATH_DATA, config):
-    print("Creating train dataloader ...")
-    train_pattern_files = PATH_DATA / 'train*.tfrecord'
-    list_train_files = glob.glob( train_pattern_files.__str__() )
+def get_subsample_files(list_files, PERCENTAGE, SHUFFLE=True):
 
-    test_pattern_files = PATH_DATA / 'test*.tfrecord'
-    list_test_files = glob.glob( test_pattern_files.__str__() )
-
-    pytorch_dataset = DataManagerVideo( list_train_files )
-    train_dataloader = torch.utils.data.DataLoader(pytorch_dataset, batch_size=config['Train']['bs'], num_workers=0)
-
-    pytorch_dataset = DataManagerVideo( list_test_files )
-    test_dataloader = torch.utils.data.DataLoader(pytorch_dataset, batch_size=config['Train']['bs'], num_workers=0)
-
-    return train_dataloader, test_dataloader
-
-def get_subsample_files(list_files, PERCENTAGE):
+    N_FILES = len(list_files)
+    NUM_SAMPLES = int( N_FILES * PERCENTAGE )
     # Do shuffle
-    list_files = np.random.shuffle(list_files)
-    # take a percentage
-    list_files = list_files[:int(len(list_files)*PERCENTAGE)]
+    if SHUFFLE:
+        list_files = random.sample(list_files, NUM_SAMPLES)
+    else:
+        list_files = np.array(list_files)[:NUM_SAMPLES]
     
     return list_files
         
 
-def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.2):
+def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.1):
     
     print("Creating train dataloader ...")
-    train_pattern_files = PATH_DATA / 'train*.tfrecord'
-    
+    train_pattern_files = PATH_DATA / 'train' / '*.tfrecord'
     list_train_files = glob.glob( train_pattern_files.__str__() )
-    list_train_files = get_subsample_files(list_train_files, PERCENTAGE)    
     
-    test_pattern_files = PATH_DATA / 'test*.tfrecord'
-    list_test_files = glob.glob( test_pattern_files.__str__() )
-    list_test_files = get_subsample_files(list_test_files, PERCENTAGE)    
+    list_train_files, list_test_files = train_test_split(list_train_files, test_size=0.2, random_state=0)
+    
+    #list_train_files = get_subsample_files(list_train_files, PERCENTAGE, SHUFFLE=True)
+    #list_test_files = get_subsample_files(list_test_files, PERCENTAGE , SHUFFLE=False)    
+    
+    #test_pattern_files = PATH_DATA / 'test' / '*.tfrecord'
+    #list_test_files = glob.glob( test_pattern_files.__str__() )
 
-    pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=config['Train']['epochs'], USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    print(f"Number of train files: {len(list_train_files)}")
+    print(f"Number of test files: {len(list_test_files)}")
+
+    pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
     train_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
-    pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=config['Train']['epochs'], USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
     test_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
@@ -91,9 +86,11 @@ class TrainVideoTagging():
     def __init__(self, model, config, config_parameter_folders):
         self.config = config
         self.config_parameter_folders = config_parameter_folders
+        self.PATH_DATA = config_parameter_folders['PATH_DATA'] 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.EPOCHS = self.config['Train']['epochs']
         self.MODEL = self.config_parameter_folders['MODEL']
+        self.PERCENTAGE_DATA = self.config['Train']['PERCENTAGE_DATA']
         self.USE_FEATURES = self.config['Dataset']['USE_FEATURES']
         # Set model to device
         self.model = model
@@ -161,8 +158,8 @@ class TrainVideoTagging():
                 # Save model each 1000 steps
                 if batch_index % 50e3 == 0:
                     self.batch_index = batch_index
-                    self.loss_mean = loss_mean/(batch_index+1)
-                    self.save_model()
+                    #self.loss_mean = loss_mean/(batch_index+1)
+                    #self.save_model()
                 
         return {
             f'loss_{MODE}': loss_mean / batch_index + 1,
@@ -172,24 +169,22 @@ class TrainVideoTagging():
     }
 
 
-    def train(self, train_dataloader, test_dataloader):
+    def train(self):
         print( f"training on [{self.device}]")
         print("---------------------------------\n")
         for epoch in range(self.EPOCHS):
             self.epoch = epoch
             self.model.train()
             
-            # Instance dataloader here
-            # use a subsample of the list train
-            
-            # use subsample of the liste test too
-            #train_dataloader, test_dataloader = instance_dataloaders2( PATH_DATA, config )
-            
+            # Use a percentage of the data selcted randomly
+            if epoch == 0:
+                train_dataloader, test_dataloader = instance_dataloaders2( self.PATH_DATA, self.config, self.PERCENTAGE_DATA )
             
             loss_train =  self.batch_forward(train_dataloader, MODE='train')
 
-            self.model.eval()
-            loss_test =  self.batch_forward(test_dataloader, MODE='test')
+            #self.model.eval()
+            with torch.no_grad():
+                loss_test =  self.batch_forward(test_dataloader, MODE='test')
 
             # Instance wandb
             if self.epoch == 0:
@@ -207,7 +202,7 @@ class TrainVideoTagging():
         if self.epoch > 0: 
             if loss_test < self.best_loss:
                 # save and update 
-                self.save_model()
+                self.save_model(loss_test)
                 self.best_loss = loss_test
                 # reset counter
                 self.patience_counter = 0
@@ -220,18 +215,18 @@ class TrainVideoTagging():
         else: # first epoch
             self.best_loss = 0
             self.patience_counter = 0
-            self.save_model()
+            self.save_model(loss_test)
             
         return False
 
-    def save_model(self):
+    def save_model(self, loss_test):
         PATH_SAVE_MODEL = self.config_parameter_folders['PATH_SAVE_MODEL']
         NAME_EXPERIMENT = self.config_parameter_folders['NAME_EXPERIMENT']
         # save model
         if not os.path.exists( PATH_SAVE_MODEL ):
             os.makedirs( PATH_SAVE_MODEL )
             
-        FULL_NAME = (PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}_epoch_{self.epoch}_batch_{self.batch_index}_loss_{self.loss_mean:.4f}').__str__()
+        FULL_NAME = (PATH_SAVE_MODEL / f'{NAME_EXPERIMENT}_epoch_{self.epoch}_loss_test_{loss_test:.4f}').__str__()
         torch.save(self.model.state_dict(), f'{FULL_NAME}.pth')
         # save config as json
         with open(f'{FULL_NAME}.json', 'w') as f:
@@ -264,12 +259,12 @@ def main():
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
     NAME_PROJECT = 'VideoTagging_YT8M'
+    PERCENTAHE_DATA = 0.9
     MODEL = 'LinearModel'
     NOTE = 'Baseline'
 
     # Define Paths
-    FOLDER_LEVEL_FEATURE =      'frame_sample' if LEVEL_FEATURE=='frame' else 'video_sample'
-    PATH_DATA =                 PATH_ROOT / config['Dataset']['folder'] / FOLDER_LEVEL_FEATURE
+    PATH_DATA =                 PATH_ROOT / config['Dataset']['folder'] / LEVEL_FEATURE
     FOLDERS_SAVE_MODEL =        PATH_ROOT / config['Model']['folder']
     PATH_SAVE_MODEL =           FOLDERS_SAVE_MODEL / LEVEL_FEATURE / MODEL / RUN_ID
 
@@ -287,7 +282,8 @@ def main():
     
     # Update config
     config['Dataset']['USE_FEATURES'] = FEATURES
-    config['Dataset']['PATH_DATA'] = PATH_DATA
+    config['Dataset']['PATH_DATA'] = PATH_DATA.__str__()
+    config['Train']['PERCENTAGE_DATA'] = PERCENTAHE_DATA
     config['Model']['model'] = MODEL
         
     print(f"Config;\n--------------------\n{config}\n")
@@ -299,9 +295,6 @@ def main():
     # TODO: Search checkpooint model
 
 
-    # Instance dataloaders
-    train_dataloader, test_dataloader = instance_dataloaders2( PATH_DATA, config )
-
     # Instance training
     training_video_tagging = TrainVideoTagging(
                                             model,
@@ -309,7 +302,7 @@ def main():
                                             config_parameter_folders)
     
     # Training
-    training_video_tagging.train(train_dataloader, test_dataloader)
+    training_video_tagging.train()
 
     # TODO: Add callback for scheduler
 
