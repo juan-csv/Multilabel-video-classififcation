@@ -1,6 +1,6 @@
 # Define config dataset
 Dataset:
-  folder: 'data/raw/yt8m/2'
+  folder: 'data/raw/yt8m/2' # '/home/jupyter/gcs'
   vocabulary_path: 'data/vocabulary.csv'
   
   parameters:

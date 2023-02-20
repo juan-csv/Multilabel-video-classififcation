@@ -48,7 +48,7 @@ def get_subsample_files(list_files, PERCENTAGE, SHUFFLE=True):
 def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.1):
     
     print("Creating train dataloader ...")
-    train_pattern_files = PATH_DATA / 'train' / '*.tfrecord'
+    train_pattern_files = PATH_DATA / 'train' / 'train*.tfrecord'
     list_train_files = glob.glob( train_pattern_files.__str__() )
     
     list_train_files, list_test_files = train_test_split(list_train_files, test_size=0.2, random_state=0)
@@ -254,7 +254,7 @@ def main():
     # Get parameters
 
     # Arguments
-    RUN_ID = current_tim2id()
+    RUN_ID = None
     LEVEL_FEATURE = 'video'
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
@@ -262,9 +262,17 @@ def main():
     PERCENTAHE_DATA = 0.9
     MODEL = 'LinearModel'
     NOTE = 'Baseline'
+    DIR_DATASET = None
+    
+    
+    if RUN_ID == None:
+        RUN_ID = current_tim2id()
+        
+    if DIR_DATASET == None:
+        DIR_DATASET = config['Dataset']['folder']
 
     # Define Paths
-    PATH_DATA =                 PATH_ROOT / config['Dataset']['folder'] / LEVEL_FEATURE
+    PATH_DATA =                 PATH_ROOT / DIR_DATASET / LEVEL_FEATURE
     FOLDERS_SAVE_MODEL =        PATH_ROOT / config['Model']['folder']
     PATH_SAVE_MODEL =           FOLDERS_SAVE_MODEL / LEVEL_FEATURE / MODEL / RUN_ID
 
