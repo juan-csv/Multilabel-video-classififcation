@@ -28,7 +28,7 @@ sys.path.append(PATH_ROOT.__str__())
 from utils.utils import current_tim2id
 from src.data.torch_dataloader import DataManagerVideo
 from src.data.torch_dataloader_v2 import YoutubeVideoDataset
-from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo, RNNModelVideo
+from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo, RNNModelVideo, LinearResidualVideo
 from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_at_equal_recall_rate
 
 # Functions
@@ -162,10 +162,10 @@ class TrainVideoTagging():
                     #self.save_model()
                 
         return {
-            f'loss_{MODE}': loss_mean / batch_index + 1,
-            f'gap_{MODE}': gap / batch_index + 1,
-            f'hit_at_one_{MODE}': hit_at_one / batch_index + 1,
-            f'perr_{MODE}': perr / batch_index + 1
+            f'loss_{MODE}': loss_mean / (batch_index + 1),
+            f'gap_{MODE}': gap / (batch_index + 1),
+            f'hit_at_one_{MODE}': hit_at_one / (batch_index + 1),
+            f'perr_{MODE}': perr / (batch_index + 1)
     }
 
 
@@ -213,7 +213,7 @@ class TrainVideoTagging():
                     return True
         
         else: # first epoch
-            self.best_loss = 0
+            self.best_loss = loss_test
             self.patience_counter = 0
             self.save_model(loss_test)
             
@@ -258,9 +258,9 @@ def main():
     LEVEL_FEATURE = 'video'
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
-    NAME_PROJECT = 'VideoTagging_YT8M'
+    NAME_PROJECT = 'VideoTagging_YT8M_OurGlass'
     PERCENTAHE_DATA = 1
-    MODEL = 'RNNModelVideo'
+    MODEL = 'LinearResidualVideo'
     NOTE = 'Baseline'
     DIR_DATASET = None
     
@@ -301,7 +301,11 @@ def main():
     if MODEL == 'LinearModel':
         model = LinearModelVideo( config )
     elif MODEL == 'RNNModelVideo':
+        torch.backends.cudnn.enabled = False
         model = RNNModelVideo( config )
+    elif MODEL == 'LinearResidualVideo':
+        model = LinearResidualVideo( config )    
+    
     print(f"Number parameters trainable:        {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     print(f"Number parameters total:            {sum(p.numel() for p in model.parameters())}\n")
     

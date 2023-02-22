@@ -66,6 +66,8 @@ class LinearModelVideoAudio(torch.nn.Module):
         out = self.out(emb)
         return out
 
+
+
 class LinearModelVideo(torch.nn.Module):
     def __init__(self, config) -> None:
         super().__init__()
@@ -99,6 +101,53 @@ class LinearModelVideo(torch.nn.Module):
         return out
 
 
+class LinearResidualVideo(torch.nn.Module):
+    def __init__(self, config) -> None:
+        super().__init__()
+        
+        self.N_FEATURES_VIDEO = config['Dataset']['parameters']['N_FEATURES_VIDEO']
+        self.N_CLASSES =        config['Dataset']['parameters']['N_CLASSES']
+        
+        self.emb = nn.Sequential(
+                    nn.Linear(in_features=self.N_FEATURES_VIDEO, out_features=self.N_CLASSES),
+                    nn.ReLU(),
+                    #nn.BatchNorm1d(num_features=self.N_CLASSES)
+                    )
+        
+        self.layer1 = nn.Sequential(
+                    nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
+                    nn.ReLU())
+        
+        self.layer2 = nn.Sequential(
+                    nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
+                    nn.ReLU())
+        
+        self.out = nn.Sequential(
+                    nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
+                    nn.Sigmoid())
+        
+    def forward(self, rgb_emb):
+        """
+            Args:
+                rgb_emb: (batch, N_FEATURES_VIDEO)
+            
+        """
+        
+        # Embedding
+        emb = self.emb(rgb_emb)
+        
+        # Residual
+        res1 = self.layer1(emb)
+        res1 = emb + res1
+        
+        res2 = self.layer2(res1)
+        res2 = res1 + res2
+        
+        # OUT 
+        out = self.out(res2)
+        return out
+
+
 class RNNModelVideo(torch.nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -106,10 +155,11 @@ class RNNModelVideo(torch.nn.Module):
         self.N_FEATURES_VIDEO = config['Dataset']['parameters']['N_FEATURES_VIDEO']
         self.N_CLASSES =        config['Dataset']['parameters']['N_CLASSES']
         
-        self.num_layer = 2
-        self.hidden_size = 32
+        self.num_layer = 7
+        self.hidden_size = 256
         
         self.lstm = nn.LSTM(input_size=self.N_FEATURES_VIDEO, hidden_size=self.hidden_size, num_layers=self.num_layer, batch_first=True, bidirectional=False)
+        #self.rnn = nn.GRU(input_size=self.N_FEATURES_VIDEO, hidden_size=self.hidden_size, num_layers=self.num_layer, batch_first=True, bidirectional=False)
         
         self.middle = nn.Sequential(
                 nn.Linear(in_features=self.hidden_size, out_features=self.N_CLASSES),
@@ -118,6 +168,11 @@ class RNNModelVideo(torch.nn.Module):
         self.out = nn.Sequential(
                 nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
                 nn.Sigmoid())
+
+
+
+        
+        
         
     def forward(self, x):
         # in: (batch, seq_len, N_FEATURES_VIDEO) -> out: (batch, hidden_size), [h, c] --> hs: (num_layers, hidden_size) | cs: (num_layers, hidden_size)
@@ -135,7 +190,55 @@ class RNNModelVideo(torch.nn.Module):
         
         return out
 
+
+
+class CNN1DSpatial(torch.nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        
+        self.N_FEATURES_VIDEO = config['Dataset']['parameters']['N_FEATURES_VIDEO']
+        self.N_CLASSES =        config['Dataset']['parameters']['N_CLASSES']
+        
+        self.linear_in = nn.Sequential(
+                            nn.Linear(in_features=self.N_FEATURES_VIDEO, out_features=self.N_CLASSES)
+                            )
+        
+        self.cnn1d = nn.Sequential(
+                            nn.Conv1d(in_channels=self.N_CLASSES),
+                            nn.BatchNorm1d(num_features=self.N_CLASSES),
+                            nn.ReLU()
+                            )
+        
+        self.cnn1d = nn.Sequential(
+                            nn.Conv1d(in_channels=self.N_CLASSES),
+                            nn.BatchNorm1d(num_features=self.N_CLASSES),
+                            nn.ReLU()
+                            )
+
+        self.out = nn.Sequntial(
+            nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
+            nn.Sigmoid()
+        )
+    
+    def forward(self, rgb_emb):
+        """
+            rgb_emb: (batch, N_FEATURES_VIDEO)
+        """
+        out = self.linear_in(rgb_emb) # (batch, N_CLASSES)
+        
+        out = out.permute(0, 2, 1) # (batch, N_CLASSES, N_FEATURES_VIDEO)
+        
+        
+        
+
+
+
+
+
+
 if __name__ ==  "__main__":
+    torch.backends.cudnn.enabled = False
+    
     # Parameters
     BS = 5
     N_FEATURES_VIDEO = 1024
@@ -146,11 +249,29 @@ if __name__ ==  "__main__":
     audio_data = np.random.randn( BS, N_FEATURES_AUDIO )
     video_data = np.random.randn( BS, N_FEATURES_VIDEO )
     target = np.random.randint(0, 2, size=(BS, N_CLASSES))
-
-    audio_data = torch.tensor( audio_data ).float()
-    video_data=  torch.tensor(video_data).float()
-    model= LinearModel(config)
+    
+    
+    # get device
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    
+    # convert to tensor
+    audio_data = torch.from_numpy( audio_data ).float().to(device)
+    video_data=  torch.from_numpy(video_data).float().to(device)
+    target = torch.from_numpy(target).float().to(device)
+    
+    lstm = nn.LSTM(input_size=N_FEATURES_VIDEO, hidden_size=32, num_layers=2, batch_first=True).to(device)
+    out = lstm(video_data)
+    print(out[0].shape)
+    
+    # define model
+    model= LinearModelVideoAudio(config).to(device)
     out = model(video_data, audio_data)
+    
+    print(f"Input shape:     {audio_data.shape}")
+    print(f"Out shape:       {out.shape}")
+
+    #model= RNNModelVideo(config).to(device)
+    #out = model(video_data)#, audio_data)
     
     print(f"Input shape:     {video_data.shape}")
     print(f"Out shape:       {out.shape}")
