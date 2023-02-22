@@ -1,5 +1,9 @@
-import os, sys
+"""
+Inspired by a https://arxiv.org/pdf/1706.06905.pdf
+"""
+
 import yaml
+import os, sys
 import numpy as np
 from pathlib import Path
 
@@ -94,6 +98,41 @@ class LinearModelVideo(torch.nn.Module):
         out = self.out(emb)
         return out
 
+
+class RNNModelVideo(nn.Module):
+    def __init__(self, config):
+        self.N_FEATURES_VIDEO = config['Dataset']['parameters']['N_FEATURES_VIDEO']
+        self.N_CLASSES =        config['Dataset']['parameters']['N_CLASSES']
+        
+        self.num_layer = 7
+        self.hidden_size = 256
+        
+        
+        self.lstm = nn.LSTM(input_size=N_FEATURES_VIDEO, hidden_size=self.hidden_size, num_layers=self.num_layer, batch_first=True, bidirectional=False)
+        
+        self.middle = nn.Sequential(
+                nn.Linear(in_features=self.hidden_size, out_features=N_CLASSES),
+                nn.ReLU())
+        
+        self.out = nn.Sequential(
+                nn.Linear(in_features=N_CLASSES, out_features=N_CLASSES),
+                nn.Sigmoid())
+        
+    def forward(self, x):
+        # in: (batch, seq_len, N_FEATURES_VIDEO) -> out: (batch, seq_len, hidden_size)
+        out, hs = self.lstm(x)
+        
+        # mean pooling, time dimension
+        # in: (batch, seq_len, hidden_size) -> out: (batch, hidden_size)
+        out = torch.mean(out, dim=1)
+        
+        # in: (batch, hidden_size) -> out: (batch, N_CLASSES)
+        out = self.middle(out)
+        
+        # in: (batch, N_CLASSES) -> out: (batch, N_CLASSES)
+        out = self.out(out)
+        
+        return out
 
 if __name__ ==  "__main__":
     # Parameters

@@ -28,7 +28,7 @@ sys.path.append(PATH_ROOT.__str__())
 from utils.utils import current_tim2id
 from src.data.torch_dataloader import DataManagerVideo
 from src.data.torch_dataloader_v2 import YoutubeVideoDataset
-from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo
+from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo, RNNModelVideo
 from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_at_equal_recall_rate
 
 # Functions
@@ -298,7 +298,12 @@ def main():
 
     
     # Instance model
-    model = LinearModelVideo( config )
+    if MODEL == 'LinearModel':
+        model = LinearModelVideo( config )
+    elif MODEL == 'RNNModelVideo':
+        model = RNNModelVideo( config )
+    print(f"Number parameters model: {model.count_parameters()}\n")
+    
 
     # TODO: Search checkpooint model
 
