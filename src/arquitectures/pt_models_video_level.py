@@ -120,15 +120,15 @@ class RNNModelVideo(torch.nn.Module):
                 nn.Sigmoid())
         
     def forward(self, x):
-        # in: (batch, seq_len, N_FEATURES_VIDEO) -> out: (batch, seq_len, hidden_size)
+        # in: (batch, seq_len, N_FEATURES_VIDEO) -> out: (batch, hidden_size), [h, c] --> hs: (num_layers, hidden_size) | cs: (num_layers, hidden_size)
         out, hs = self.lstm(x)
         
         # mean pooling, time dimension
         # in: (batch, seq_len, hidden_size) -> out: (batch, hidden_size)
-        out = torch.mean(out, dim=1)
+        #out = torch.mean(out, dim=1)
         
         # in: (batch, hidden_size) -> out: (batch, N_CLASSES)
-        #out = self.middle(out)
+        out = self.middle(out)
         
         # in: (batch, N_CLASSES) -> out: (batch, N_CLASSES)
         out = self.out(out)
