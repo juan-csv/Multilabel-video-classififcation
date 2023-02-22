@@ -12,6 +12,6 @@ Model:
   folder: 'models'
 
 Train:
-  bs: 512
+  bs: 256
   epochs: 50
   patience: 5

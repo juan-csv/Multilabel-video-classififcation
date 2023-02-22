@@ -259,8 +259,8 @@ def main():
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
     NAME_PROJECT = 'VideoTagging_YT8M'
-    PERCENTAHE_DATA = 0.9
-    MODEL = 'LinearModel'
+    PERCENTAHE_DATA = 1
+    MODEL = 'RNNModelVideo'
     NOTE = 'Baseline'
     DIR_DATASET = None
     
@@ -302,9 +302,10 @@ def main():
         model = LinearModelVideo( config )
     elif MODEL == 'RNNModelVideo':
         model = RNNModelVideo( config )
-    print(f"Number parameters model: {model.count_parameters()}\n")
+    print(f"Number parameters trainable:        {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    print(f"Number parameters total:            {sum(p.numel() for p in model.parameters())}\n")
     
-
+    
     # TODO: Search checkpooint model
 
 
