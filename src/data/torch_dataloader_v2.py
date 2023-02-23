@@ -58,34 +58,24 @@ def Dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
 
 
 class YoutubeSegmentDataset(IterableDataset):
-    def __init__(self, file_paths, seed=939, debug=False,
+    def __init__(self, file_paths, debug=False,
                  vocab_path=PATH_VOCAB,
-                 epochs=1, max_examples=None, offset=0,
+                 epochs=1, MAX_FRAMES=360,
                  USE_FEATURES= ['rgb', 'audio'] ):
         super(YoutubeSegmentDataset).__init__()
-        print("Offset:", offset)
         self.file_paths = file_paths
-        self.seed = seed
         self.debug = debug
-        self.max_examples = max_examples
+        self.MAX_FRAMES = MAX_FRAMES
         self.USE_FEATURES = USE_FEATURES
         vocab = pd.read_csv(vocab_path)
         self.label_mapping = {
             label: index for label, index in zip(vocab["Index"], vocab.index)
         }
-        self.epochs = epochs
-        self.offset = offset
+        self.epochs = 1
 
     def __iter__(self):
         worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None:  # single-process data loading, return the full iterator
-            seed = self.seed
-        else:  # in a worker process
-            # split workload
-            if worker_info.num_workers > 1 and self.epochs == 1:
-                raise ValueError("Validation cannot have num_workers > 1!")
-            seed = self.seed + worker_info.id
-        return self.generator(seed)
+        return self.generator()
 
     def prepare_one_sample(self, row):
         example = tf.train.SequenceExample()
@@ -96,6 +86,15 @@ class YoutubeSegmentDataset(IterableDataset):
         vid_labels_encoded = set([
             self.label_mapping[x] for x in vid_labels if x in self.label_mapping
         ])
+        
+    # Skip rows with empty labels for now
+        if not vid_labels_encoded:
+            # print("Skipped")
+            return None, None
+
+        # Expanded Lables: Shape (N_CLASSES)
+        labels = np.zeros(N_CLASSES)
+        labels[list(vid_labels_encoded)] = 1
         """
         segment_labels = np.array(
             context.feature['segment_labels'].int64_list.value).astype("int64")
@@ -123,41 +122,55 @@ class YoutubeSegmentDataset(IterableDataset):
             [x.bytes_list.value[0] for x in tmp], out_type="uint8"), "float32"
         ).numpy()
 
-        # Combine: shape(frames, 1152)
-        video_features = torch.from_numpy(
-            np.concatenate([frames, audio], axis=-1))
-
+        print(frames.shape)
         # Pad agressively
-        # if segment_start_times.max() + 5 > features.size(0):
-        video_features_padded = torch.cat(
-            [
-                torch.zeros(
-                    self.offset, video_features.size(1),
-                    dtype=video_features.dtype
-                ),
-                video_features,
-                torch.zeros(
-                    5 + self.offset, video_features.size(1),
-                    dtype=video_features.dtype
-                )
-            ],
-            dim=0
-        )
+        if frames.shape[0] < self.MAX_FRAMES:
+            frames = np.concatenate([
+                frames,
+                np.zeros((self.MAX_FRAMES - frames.shape[0], frames.shape[1]))
+            ])
+        
+        if audio.shape[0] < self.MAX_FRAMES:
+            audio = np.concatenate([
+                audio,
+                np.zeros((self.MAX_FRAMES - audio.shape[0], audio.shape[1]))
+            ])
 
 
-        return (
-            video_features
-        )
+        if 'audio' in self.USE_FEATURES:
+            return (
+                torch.from_numpy(frames),
+                torch.from_numpy(audio),
+                torch.from_numpy(labels)
+            )
+        else:
+            return (
+                torch.from_numpy(frames),
+                torch.from_numpy(labels)
+            )
 
     def _iterate_through_dataset(self, tf_dataset):
         for row in tf_dataset:
-            video_features, segments, segment_labels, segment_scores, negative_mask = (
-                self.prepare_one_sample(row)
-            )
-            for segment, label, score in zip(segments, segment_labels, segment_scores):
-                yield video_features, segment, torch.cat([label, score, negative_mask])
+            if 'audio' in self.USE_FEATURES:
+                frames, audio, labels = (
+                    self.prepare_one_sample(row)
+                )
+                
+                if frames is None:
+                    continue
+                
+                yield frames, audio, labels
+                
+            else:
+                frames, labels = (
+                    self.prepare_one_sample(row)
+                )
+                
+                if frames is None:
+                    continue
+                yield frames, labels
 
-    def generator(self, seed):
+    def generator(self):
         tf_dataset = tf.data.TFRecordDataset(
             tf.data.Dataset.from_tensor_slices(self.file_paths)
         )
@@ -165,7 +178,6 @@ class YoutubeSegmentDataset(IterableDataset):
         for n_example, row in enumerate(self._iterate_through_dataset(tf_dataset)):
             yield row
 
-f_bytes2array = lambda x: tf.cast(tf.decode_raw( x.bytes_list.value[0], tf.uint8), tf.float32).numpy()
 
 
 class YoutubeVideoDataset(YoutubeSegmentDataset):
@@ -237,90 +249,6 @@ class YoutubeVideoDataset(YoutubeSegmentDataset):
                     continue
                 yield frames, labels
 
-
-
-
-class YoutubeTestDataset(YoutubeSegmentDataset):
-    def __init__(self, file_paths, seed=939, debug=False,
-                 vocab_path="/Users/macbook/Desktop/OurGlass/VideoTagging/data/vocabulary.csv",
-                 epochs=1, max_examples=None, offset=0,
-                 device="cpu", starts_from=6, ends_at=-2):
-        super().__init__(
-            file_paths=file_paths, seed=seed, debug=debug,
-            vocab_path=vocab_path, epochs=epochs,
-            max_examples=max_examples, offset=offset
-        )
-        self.unfold = nn.Unfold(
-            kernel_size=(self.offset * 2 + 5, 1),
-            padding=(self.offset, 0), stride=(5, 1))
-        self.device = device
-        self.starts_from = starts_from
-        self.ends_at = ends_at
-
-    def prepare_one_sample(self, row):
-        example = tf.train.SequenceExample()
-        tmp = example.FromString(row.numpy())
-        context, features = tmp.context, tmp.feature_lists
-
-        vid = context.feature['id'].bytes_list.value[0].decode('utf8')
-
-        # Frames. Shape: (frames, 1024)
-        tmp = features.feature_list['rgb'].feature
-        frames = tf.cast(tf.io.decode_raw(
-            [x.bytes_list.value[0] for x in tmp], out_type="uint8"), "float32"
-        ).numpy()
-
-        # Audio. Shape: (frames, 128)
-        tmp = features.feature_list['audio'].feature
-        audio = tf.cast(tf.io.decode_raw(
-            [x.bytes_list.value[0] for x in tmp], out_type="uint8"), "float32"
-        ).numpy()
-
-        # Combine: shape(frames, 1152)
-        video_features = torch.from_numpy(np.concatenate(
-            [frames, audio], axis=-1))
-        # Combine: shape(frames, 1152)
-        video_features_padded = torch.from_numpy(np.concatenate(
-            [frames, audio], axis=-1))
-
-        # Pad if necessary
-        if video_features.size(0) % 5 != 0:
-            video_features_padded = torch.cat(
-                [
-                    video_features_padded,
-                    torch.zeros(
-                        5 - video_features_padded.size(0) % 5,
-                        video_features_padded.size(1),
-                        dtype=video_features_padded.dtype
-                    )
-                ],
-                dim=0
-            )
-
-        # shape (1, 1152 * (5 + 2 * self.offset), n_segments, 1)
-        unfolded = self.unfold(
-            video_features_padded.to(self.device).transpose(1, 0)[None, :, :, None])
-        # shape (1152, 5 + 2 * self.offset, n_segments)
-        unfolded = unfolded.view(
-            video_features_padded.size(1), 5 + 2 * self.offset, -1)
-        if self.debug:
-            assert unfolded.size(-1) == video_features_padded.size(0) // 5
-        # shape (n_segments, 1152, 5 + 2 * self.offset, 1152)
-        segment_features = unfolded.transpose(0, 2)
-        # Truncate tail and head because they are not evaluated
-        segment_features = segment_features[self.starts_from:self.ends_at]
-        # Combine: shape(n_segments, frames, 1152)
-        # video_features = video_features.unsqueeze(
-        #     0).repeat(segment_features.size(0), 1, 1)
-        return video_features, segment_features, vid
-
-    def _iterate_through_dataset(self, tf_dataset):
-        for row in tf_dataset:
-            video_features, segment_features, vid = (
-                self.prepare_one_sample(row)
-            )
-            for i, segment_row in enumerate(segment_features):
-                yield video_features, segment_row, i+self.starts_from, vid
 
 
 def collate_videos(batch, pad=0):
@@ -397,7 +325,7 @@ if __name__ == "__main__":
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     # Get relative dataset folder 
-    LEVEL_FEATURE = 'video'
+    LEVEL_FEATURE = 'frame'
 
     # Define paths
     PATH_DATA = PATH_ROOT / config['Dataset']['folder'] / LEVEL_FEATURE
@@ -415,7 +343,7 @@ if __name__ == "__main__":
 
     USE_FEATURES=['rgb'] 
     
-    dataset = YoutubeVideoDataset(filepaths, epochs=1, USE_FEATURES=USE_FEATURES)
+    dataset = YoutubeSegmentDataset(filepaths, epochs=1, USE_FEATURES=USE_FEATURES)
     loader = DataLoader(dataset, num_workers=0,
                         batch_size=1024, prefetch_factor=2)#, collate_fn=collate_videos)
     
