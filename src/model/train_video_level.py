@@ -81,7 +81,6 @@ def load_config():
     return config
 
 
-
 class TrainVideoTagging():
     def __init__(self, model, config, config_parameter_folders):
         self.config = config
@@ -89,6 +88,7 @@ class TrainVideoTagging():
         self.PATH_DATA = config_parameter_folders['PATH_DATA'] 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.EPOCHS = self.config['Train']['epochs']
+        self.LR = self.config['Train']['lr']
         self.MODEL = self.config_parameter_folders['MODEL']
         self.PERCENTAGE_DATA = self.config['Train']['PERCENTAGE_DATA']
         self.USE_FEATURES = self.config['Dataset']['USE_FEATURES']
@@ -100,7 +100,7 @@ class TrainVideoTagging():
         self.criterion = nn.BCELoss()
 
         # Instance optimizer
-        self.optimizer = torch.optim.Adam( model.parameters() )
+        self.optimizer = torch.optim.Adam( model.parameters(), lr=self.LR )
 
     def batch_forward(self, dataloader, MODE):
         # Define metrics
@@ -160,6 +160,7 @@ class TrainVideoTagging():
                     self.batch_index = batch_index
                     #self.loss_mean = loss_mean/(batch_index+1)
                     #self.save_model()
+        print('\n')
                 
         return {
             f'loss_{MODE}': loss_mean / (batch_index + 1),
@@ -249,19 +250,21 @@ class TrainVideoTagging():
                     save_code = True
                     )
 
+
+
 def main():
     config = load_config()
     # Get parameters
 
     # Arguments
     RUN_ID = None
-    LEVEL_FEATURE = 'video'
+    LEVEL_FEATURE = 'frame' # 'video' or 'frame'
     FEATURES = ['rgb'] # ['audio', 'rgb']
-    NAME_EXPERIMENT = f"{RUN_ID}_baseline_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
     NAME_PROJECT = 'VideoTagging_YT8M_OurGlass'
     PERCENTAHE_DATA = 1
     MODEL = 'LinearResidualVideo'
-    NOTE = 'Baseline'
+    NAME_EXPERIMENT = f"{RUN_ID}_{MODEL}_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
+    NOTE = 'Baseline_dropout_0.5'
     DIR_DATASET = None
     
     
@@ -291,7 +294,6 @@ def main():
     # Update config
     config['Dataset']['USE_FEATURES'] = FEATURES
     config['Dataset']['PATH_DATA'] = PATH_DATA.__str__()
-    config['Train']['PERCENTAGE_DATA'] = PERCENTAHE_DATA
     config['Model']['model'] = MODEL
         
     print(f"Config;\n--------------------\n{config}\n")

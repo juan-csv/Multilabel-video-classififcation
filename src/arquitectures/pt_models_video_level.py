@@ -126,22 +126,28 @@ class LinearResidualVideo(torch.nn.Module):
                     nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
                     nn.Sigmoid())
         
+        # add dropout
+        self.dropout = nn.Dropout(p=0.5)
+        
+        
     def forward(self, rgb_emb):
         """
             Args:
                 rgb_emb: (batch, N_FEATURES_VIDEO)
             
         """
-        
         # Embedding
         emb = self.emb(rgb_emb)
+        emb = self.dropout(emb)
         
         # Residual
         res1 = self.layer1(emb)
         res1 = emb + res1
+        res1 = self.dropout(res1)
         
         res2 = self.layer2(res1)
         res2 = res1 + res2
+        res2 = self.dropout(res2)
         
         # OUT 
         out = self.out(res2)
