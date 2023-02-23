@@ -45,7 +45,7 @@ def get_subsample_files(list_files, PERCENTAGE, SHUFFLE=True):
     return list_files
         
 
-def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.1):
+def instance_dataloaders2(PATH_DATA, config):
     
     print("Creating train dataloader ...")
     train_pattern_files = PATH_DATA / 'train' / 'train*.tfrecord'
@@ -90,7 +90,6 @@ class TrainVideoTagging():
         self.EPOCHS = self.config['Train']['epochs']
         self.LR = self.config['Train']['lr']
         self.MODEL = self.config_parameter_folders['MODEL']
-        self.PERCENTAGE_DATA = self.config['Train']['PERCENTAGE_DATA']
         self.USE_FEATURES = self.config['Dataset']['USE_FEATURES']
         # Set model to device
         self.model = model
@@ -179,7 +178,7 @@ class TrainVideoTagging():
             
             # Use a percentage of the data selcted randomly
             if epoch == 0:
-                train_dataloader, test_dataloader = instance_dataloaders2( self.PATH_DATA, self.config, self.PERCENTAGE_DATA )
+                train_dataloader, test_dataloader = instance_dataloaders2( self.PATH_DATA, self.config )
             
             loss_train =  self.batch_forward(train_dataloader, MODE='train')
 
@@ -258,13 +257,13 @@ def main():
 
     # Arguments
     RUN_ID = None
-    LEVEL_FEATURE = 'frame' # 'video' or 'frame'
+    LEVEL_FEATURE = 'video' # 'video' or 'frame'
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_PROJECT = 'VideoTagging_YT8M_OurGlass'
     PERCENTAHE_DATA = 1
     MODEL = 'LinearResidualVideo'
     NAME_EXPERIMENT = f"{RUN_ID}_{MODEL}_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
-    NOTE = 'Baseline_dropout_0.5'
+    NOTE = 'Baseline_dropout_0.5_lr'
     DIR_DATASET = None
     
     

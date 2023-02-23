@@ -13,6 +13,6 @@ Model:
 
 Train:
   bs: 256
-  lr: 0.001
+  lr: 0.0001
   epochs: 50
   patience: 5
