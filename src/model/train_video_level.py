@@ -27,7 +27,7 @@ sys.path.append(PATH_ROOT.__str__())
 # Local imports
 from utils.utils import current_tim2id
 from src.data.torch_dataloader import DataManagerVideo
-from src.data.torch_dataloader_v2 import YoutubeVideoDataset
+from src.data.torch_dataloader_v2 import YoutubeVideoDataset, YoutubeSegmentDataset
 from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo, RNNModelVideo, LinearResidualVideo
 from eval_util import calculate_gap, calculate_hit_at_one, calculate_precision_at_equal_recall_rate
 
@@ -45,7 +45,7 @@ def get_subsample_files(list_files, PERCENTAGE, SHUFFLE=True):
     return list_files
         
 
-def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.1):
+def instance_dataloaders2(PATH_DATA, config, LEVEL_FEATURE):
     
     print("Creating train dataloader ...")
     train_pattern_files = PATH_DATA / 'train' / 'train*.tfrecord'
@@ -62,11 +62,18 @@ def instance_dataloaders2(PATH_DATA, config, PERCENTAGE=0.1):
     print(f"Number of train files: {len(list_train_files)}")
     print(f"Number of test files: {len(list_test_files)}")
 
-    pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    if LEVEL_FEATURE == 'video':
+        pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    else:
+        pytorch_dataset = YoutubeSegmentDataset(list_train_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
     train_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
-    pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    if LEVEL_FEATURE == 'video':
+        pytorch_dataset = YoutubeVideoDataset(list_test_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    else:
+        pytorch_dataset = YoutubeSegmentDataset(list_test_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])    
+    
     test_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
@@ -90,8 +97,8 @@ class TrainVideoTagging():
         self.EPOCHS = self.config['Train']['epochs']
         self.LR = self.config['Train']['lr']
         self.MODEL = self.config_parameter_folders['MODEL']
-        self.PERCENTAGE_DATA = self.config['Train']['PERCENTAGE_DATA']
         self.USE_FEATURES = self.config['Dataset']['USE_FEATURES']
+        self.LEVEL_FEATURE = config_parameter_folders['LEVEL_FEATURE']
         # Set model to device
         self.model = model
         model.to(self.device)
@@ -179,7 +186,7 @@ class TrainVideoTagging():
             
             # Use a percentage of the data selcted randomly
             if epoch == 0:
-                train_dataloader, test_dataloader = instance_dataloaders2( self.PATH_DATA, self.config, self.PERCENTAGE_DATA )
+                train_dataloader, test_dataloader = instance_dataloaders2( self.PATH_DATA, self.config, self.LEVEL_FEATURE)
             
             loss_train =  self.batch_forward(train_dataloader, MODE='train')
 
@@ -261,8 +268,7 @@ def main():
     LEVEL_FEATURE = 'frame' # 'video' or 'frame'
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_PROJECT = 'VideoTagging_YT8M_OurGlass'
-    PERCENTAHE_DATA = 1
-    MODEL = 'LinearResidualVideo'
+    MODEL = 'RNNModelVideo'
     NAME_EXPERIMENT = f"{RUN_ID}_{MODEL}_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
     NOTE = 'Baseline_dropout_0.5'
     DIR_DATASET = None

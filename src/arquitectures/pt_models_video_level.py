@@ -174,22 +174,28 @@ class RNNModelVideo(torch.nn.Module):
         self.out = nn.Sequential(
                 nn.Linear(in_features=self.N_CLASSES, out_features=self.N_CLASSES),
                 nn.Sigmoid())
+        
+        self.dropout = nn.Dropout(p=0.5)
 
-
-
         
+    def forward(self, rgb_frames):
+        """
+        Args:
+            rgb_frames: (batch, seq_len, N_FEATURES_VIDEO)
+        """
         
+        # in: (batch, seq_len, N_FEATURES_VIDEO) -> out: (batch, seq_len, hidden_size) hs[0]: (num_layers, batch, hidden_size)  hs[1]: (num_layers, batch, hidden_size) 
+        out, hs = self.lstm(rgb_frames)
+        out = self.dropout(out)
         
-    def forward(self, x):
-        # in: (batch, seq_len, N_FEATURES_VIDEO) -> out: (batch, hidden_size), [h, c] --> hs: (num_layers, hidden_size) | cs: (num_layers, hidden_size)
-        out, hs = self.lstm(x)
-        
-        # mean pooling, time dimension
+        # pooling, time dimension
         # in: (batch, seq_len, hidden_size) -> out: (batch, hidden_size)
-        #out = torch.mean(out, dim=1)
+        out = torch.mean(out, dim=1)
+        out = self.dropout(out)
         
         # in: (batch, hidden_size) -> out: (batch, N_CLASSES)
         out = self.middle(out)
+        out = self.dropout(out)
         
         # in: (batch, N_CLASSES) -> out: (batch, N_CLASSES)
         out = self.out(out)
@@ -250,10 +256,12 @@ if __name__ ==  "__main__":
     N_FEATURES_VIDEO = 1024
     N_FEATURES_AUDIO = 128
     N_CLASSES = 3862
+    MAX_FRAMES = 360
 
     # create dummy input
     audio_data = np.random.randn( BS, N_FEATURES_AUDIO )
     video_data = np.random.randn( BS, N_FEATURES_VIDEO )
+    frame_data = np.random.randn( BS, MAX_FRAMES, N_FEATURES_VIDEO )
     target = np.random.randint(0, 2, size=(BS, N_CLASSES))
     
     
@@ -263,11 +271,13 @@ if __name__ ==  "__main__":
     # convert to tensor
     audio_data = torch.from_numpy( audio_data ).float().to(device)
     video_data=  torch.from_numpy(video_data).float().to(device)
+    frame_data = torch.from_numpy(frame_data).float().to(device)
     target = torch.from_numpy(target).float().to(device)
     
-    lstm = nn.LSTM(input_size=N_FEATURES_VIDEO, hidden_size=32, num_layers=2, batch_first=True).to(device)
-    out = lstm(video_data)
-    print(out[0].shape)
+    lstm = RNNModelVideo(config).to(device)
+    out = lstm(frame_data) # out: (batch, seq_len, hidden_size) | hs[0]: (num_layers, batch, hidden_size) | hs[1]: (num_layers, batch, hidden_size)
+    print(f"Input shape:     {frame_data.shape}")
+    print(f"Out shape:       {out.shape}")
     
     # define model
     model= LinearModelVideoAudio(config).to(device)
