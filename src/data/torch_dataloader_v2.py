@@ -1,3 +1,7 @@
+"""
+ref https://github.com/ceshine/yt8m-2019/blob/master/yt8m/dataloader.py 
+"""
+
 import torch
 import os
 import sys
@@ -92,27 +96,20 @@ class YoutubeSegmentDataset(IterableDataset):
         vid_labels_encoded = set([
             self.label_mapping[x] for x in vid_labels if x in self.label_mapping
         ])
+        """
         segment_labels = np.array(
             context.feature['segment_labels'].int64_list.value).astype("int64")
         segment_start_times = np.array(
             context.feature['segment_start_times'].int64_list.value)
         segment_scores = np.array(
             context.feature['segment_scores'].float_list.value).astype("int64")
-        vid = context.feature['id'].bytes_list.value[0].decode('utf8')
 
         # Transform label
         segment_labels = np.array([
             self.label_mapping[x] for x in segment_labels])
+        """
+        vid = context.feature['id'].bytes_list.value[0].decode('utf8')
 
-        # Negative Mining: Shape (N_CLASSES)
-        if self.debug:
-            if not vid_labels_encoded:
-                print(segment_labels, vid_labels)
-            else:
-                print("Passed")
-        negative_mask = np.zeros(N_CLASSES)
-        negative_mask[np.array(
-            list(set(range(N_CLASSES)) - vid_labels_encoded - set(segment_labels)))] = 1
 
         # Frames. Shape: (frames, 1024)
         tmp = video_features.feature_list['rgb'].feature
@@ -129,22 +126,6 @@ class YoutubeSegmentDataset(IterableDataset):
         # Combine: shape(frames, 1152)
         video_features = torch.from_numpy(
             np.concatenate([frames, audio], axis=-1))
-
-        if self.debug:
-            print(f"http://data.yt8m.org/2/j/i/{vid[:2]}/{vid}.js")
-            print(segment_labels)
-            print(segment_start_times)
-            print(segment_scores)
-            print(video_features.size(0))
-            print("=" * 20 + "\n")
-
-        # skip problematic entries
-        if segment_start_times.max() > video_features.size(0):
-            # print(vid, segment_start_times, features.size(),
-            #       segment_scores, segment_labels)
-            LOGGER.debug("Skipped one problematic entry.")
-            return [], [], [], [], []
-        # assert segment_start_times.max() <= features.size(0)
 
         # Pad agressively
         # if segment_start_times.max() + 5 > features.size(0):
@@ -163,28 +144,9 @@ class YoutubeSegmentDataset(IterableDataset):
             dim=0
         )
 
-        # Create segments
-        # shape: (n_segments, 5 + self.offset * 2)
-        indices = (
-            torch.from_numpy(segment_start_times).unsqueeze(1) +
-            torch.arange(5 + 2 * self.offset).unsqueeze(0)
-        )
-        # shape: (n_segments * (5 + self.offset * 2), 1152) -> (n_segments, 5 + self.offset * 2, 1152)
-        segments = torch.index_select(video_features_padded, 0, indices.view(-1)).view(
-            indices.size(0), 5 + self.offset * 2, -1
-        )
 
         return (
-            # (n_frames, 5 + self.offset * 2, 1152)
-            video_features,
-            # (n_segments, 5 + self.offset * 2, 1152)
-            segments,
-            # (n_segments, 1)
-            torch.from_numpy(segment_labels).unsqueeze(1),
-            # (n_segments, 1)
-            torch.from_numpy(segment_scores).unsqueeze(1),
-            # (N_CLASSES,)
-            torch.from_numpy(negative_mask)
+            video_features
         )
 
     def _iterate_through_dataset(self, tf_dataset):
@@ -196,25 +158,11 @@ class YoutubeSegmentDataset(IterableDataset):
                 yield video_features, segment, torch.cat([label, score, negative_mask])
 
     def generator(self, seed):
-        if self.epochs == 1:
-            # validation
-            tf_dataset = tf.data.TFRecordDataset(
-                tf.data.Dataset.from_tensor_slices(self.file_paths)
-            )
-        else:
-            tf_dataset = tf.data.TFRecordDataset(
-                # tf.data.Dataset.list_files(
-                #     "./data/train/*.tfrecord"
-                # )
-                tf.data.Dataset.from_tensor_slices(
-                    self.file_paths
-                ).shuffle(
-                    100, seed=seed, reshuffle_each_iteration=True
-                ).repeat(self.epochs)
-            ).shuffle(256, seed=seed, reshuffle_each_iteration=True).repeat(self.epochs)
+        tf_dataset = tf.data.TFRecordDataset(
+            tf.data.Dataset.from_tensor_slices(self.file_paths)
+        )
+
         for n_example, row in enumerate(self._iterate_through_dataset(tf_dataset)):
-            if self.max_examples and self.max_examples == n_example:
-                break
             yield row
 
 f_bytes2array = lambda x: tf.cast(tf.decode_raw( x.bytes_list.value[0], tf.uint8), tf.float32).numpy()
@@ -288,6 +236,8 @@ class YoutubeVideoDataset(YoutubeSegmentDataset):
                 if frames is None:
                     continue
                 yield frames, labels
+
+
 
 
 class YoutubeTestDataset(YoutubeSegmentDataset):
@@ -436,6 +386,8 @@ def collate_test_segments(batch, pad=0, return_vid=True):
         return video_features, video_masks, segment_features, indices, vids
     return video_features, video_masks, segment_features, indices
 
+
+
 if __name__ == "__main__":
     import glob
     
@@ -446,10 +398,9 @@ if __name__ == "__main__":
 
     # Get relative dataset folder 
     LEVEL_FEATURE = 'video'
-    FOLDER_LEVEL_FEATURE = 'frame_sample' if LEVEL_FEATURE=='frame' else 'video_sample'
 
     # Define paths
-    PATH_DATA = PATH_ROOT / config['Dataset']['folder'] / '2' / LEVEL_FEATURE
+    PATH_DATA = PATH_ROOT / config['Dataset']['folder'] / LEVEL_FEATURE
     # List all tfrecords
     train_pattern_files = PATH_DATA / 'train' / '*.tfrecord'    
     test_pattern_files = PATH_DATA / 'test' / '*.tfrecord'
@@ -459,27 +410,21 @@ if __name__ == "__main__":
     list_test_files = glob.glob( test_pattern_files.__str__() )
     list_validate_files = glob.glob( validate_pattern_files.__str__() )
     
-    filepaths = list_validate_files[:3]
+    filepaths = list_train_files[:3]
     
 
     USE_FEATURES=['rgb'] 
-    dataset = YoutubeVideoDataset(filepaths, epochs=2, USE_FEATURES=USE_FEATURES)
+    
+    dataset = YoutubeVideoDataset(filepaths, epochs=1, USE_FEATURES=USE_FEATURES)
     loader = DataLoader(dataset, num_workers=0,
                         batch_size=1024, prefetch_factor=2)#, collate_fn=collate_videos)
     
-    from tqdm import tqdm
-    NUM_BATCHES_TRAIN = 0
 
-    with tqdm(loader, desc=f"couning...  ", unit='batch') as pbar:
-        for batch_index, _ in enumerate(pbar):
-            NUM_BATCHES_TRAIN += 1
-            
-    print(NUM_BATCHES_TRAIN, batch_index)
 
     # iterate through loader
     
     for i, data in enumerate(loader):
-        if i == 1000:
+        if i == 2:
             if 'audio' in USE_FEATURES:
                 frames, audio, labels = data
                 print(frames.size(), audio.size() ,labels.size())
@@ -487,9 +432,14 @@ if __name__ == "__main__":
                 frames, labels = data
                 print(frames.size(), labels.size())
             break
-        
-# import train test split
-from sklearn.model_selection import train_test_split
-l = list(range(1,100))
 
-train, test = train_test_split(l, test_size=0.2, random_state=42)
+
+    # Counting number of batches
+    from tqdm import tqdm
+    NUM_BATCHES_TRAIN = 0
+
+    with tqdm(loader, desc=f"counting...  ", unit='batch') as pbar:
+        for batch_index, _ in enumerate(pbar):
+            NUM_BATCHES_TRAIN += 1
+            
+    print(NUM_BATCHES_TRAIN, batch_index)
