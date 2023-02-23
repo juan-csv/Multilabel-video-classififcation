@@ -71,7 +71,7 @@ class YoutubeSegmentDataset(IterableDataset):
         self.label_mapping = {
             label: index for label, index in zip(vocab["Index"], vocab.index)
         }
-        self.epochs = 1
+        self.epochs = epochs
 
     def __iter__(self):
         worker_info = torch.utils.data.get_worker_info()
@@ -122,7 +122,6 @@ class YoutubeSegmentDataset(IterableDataset):
             [x.bytes_list.value[0] for x in tmp], out_type="uint8"), "float32"
         ).numpy()
 
-        print(frames.shape)
         # Pad agressively
         if frames.shape[0] < self.MAX_FRAMES:
             frames = np.concatenate([
@@ -341,7 +340,7 @@ if __name__ == "__main__":
     filepaths = list_train_files[:3]
     
 
-    USE_FEATURES=['rgb'] 
+    USE_FEATURES = ['rgb', 'audio']  #['rgb'] or ['rgb', 'audio']
     
     dataset = YoutubeSegmentDataset(filepaths, epochs=1, USE_FEATURES=USE_FEATURES)
     loader = DataLoader(dataset, num_workers=0,
