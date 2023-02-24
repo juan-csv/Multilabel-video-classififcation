@@ -15,18 +15,14 @@ import torch
 import numpy as np
 
 # Local imports
-from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo
+from utils.utils import Map_index2label
 from src.data.get_embeddings import YouTube8MFeatureExtractor
 from src.data.get_youtube_video import get_video_frames, postporcess_video
-from utils.utils import Map_index2label
+from src.arquitectures.pt_models_video_level import LinearModelVideoAudio, LinearModelVideo
 
 PATH_CONFIG = PATH_ROOT / 'config_files' / 'config.yaml'
 with open( PATH_CONFIG ) as f:
     config = yaml.safe_load( f )
-
-
-
-
 
 
 def get_path_model(FOLDERS_SAVE_MODEL, LEVEL_FEATURE, MODEL, RUN_ID):
@@ -66,13 +62,13 @@ class ModelTag():
         # load config
         PATH_CONFIG = PATH_MODEL + '.json'
         with open(PATH_CONFIG) as f:
-            config = yaml.safe_load(f)
+            self.config = yaml.safe_load(f)
         
-        # load model
+        # TODO: Select model
         #if config['Model']['parameters']['model'] == 'LinearModelVideoAudio':
             #model = LinearModelVideoAudio( config )
         #elif config['Model']['parameters']['model'] == 'LinearModelVideo':
-        self.model = LinearModelVideo( config )
+        self.model = LinearModelVideo( self.config )
         if torch.cuda.is_available():
             self.model.load_state_dict(torch.load(PATH_MODEL + '.pth' ))
         else:
@@ -101,7 +97,11 @@ class ModelTag():
             pass
         
         # get video level representation
-        video_embeding_level = self.extractor.extract_video_level_features(Frames) # (BS, 1024)
+        frame_embeding_level = self.extractor.extract_video_level_features(Frames) # (BS, 1024)
+        
+        # TODO: if LEVEL_FEATURE == 'video':
+        # reduce frame axis
+        video_embeding_level = np.mean(frame_embeding_level, axis=1)
         
         # Get label prediction
         in_feats = torch.tensor(video_embeding_level).float().to(self.device)   # (BS, 1024)
@@ -143,8 +143,7 @@ class ModelTag():
 if __name__ == '__main__':
 
     Testing = [('eguZ69v_vlQ', ['Toy', 'Littlest Pet Shop']), ('ER9Hdp04tWs', ['Association football', 'Stadium']), ('ETF2-Zz3J18', ['Light']), ('jtvbLq9bYRc', ['Circle']), ('6BPXQMxdHog', ['Vehicle', 'Car', 'Brake']), ('-j989rqetQE', ['Musician', 'Guitar', 'String instrument', 'Electric guitar', 'Epiphone']), ('F-4h2WwVr3g', ['Game', 'Cartoon', 'Animation']), ('UZt7rP0poxs', ['Game', 'Association football', 'Highlight film']), ("<?xml version='1.0' encoding='UTF-8'?><Error><Code>AccessDenied</Code><Message>Access denied.</Message></Error>", ['Game', 'Video game', 'Fighting game', 'Street Fighter', 'Super Street Fighter IV']), ('kKZBuy8kaj8', ['Cartoon', 'Animation']), ('kLVJJvEQN44', ['Harry Potter']), ('GLqhiVWGm8Q', ['Concert']), ('-QUa6WgjDqc', ['Game', 'Video game', 'Drum kit', 'Rock Band', 'Rock Band (video game)'])]
-
-
+    import time
 
     # Instance Model
     RUN_ID = '02_14_10_15'
@@ -156,21 +155,47 @@ if __name__ == '__main__':
     PATH_MODEL = get_path_model(FOLDERS_SAVE_MODEL, LEVEL_FEATURE, MODEL, RUN_ID)
     # Load model
     model_video = ModelTag(PATH_MODEL)
-
-
+    
+    def test_stram_url():
+        youtube_video_id = "se4pKdYVYMk"
+        # get video
+        start = time.time()
+        Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id,  take_first_six_min=True, take_frame_every_sec=True)
+        print(f"Time to get video: {time.time() - start }|| shape: {Frames.shape}")
+        
+        start = time.time()
+        Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id,  take_first_six_min=False, take_frame_every_sec=True)
+        print(f"Time to get video: {time.time() - start }|| shape: {Frames.shape}")
+        
+        start = time.time()
+        Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id,  take_first_six_min=True, take_frame_every_sec=False)
+        print(f"Time to get video: {time.time() - start }|| shape: {Frames.shape}")
+        
+        start = time.time()
+        Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id,  take_first_six_min=False, take_frame_every_sec=False)
+        print(f"Time to get video: {time.time() - start }|| shape: {Frames.shape}")
+    test_stram_url()
+    
+    
     # Do predictions
     for Id in range(len(Testing)):
         try:
             youtube_video_id, target = Testing[Id][0], Testing[Id][1]
             # get video
-            Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id)
-            Frames = postporcess_video( Frames, N_FRAMES, FPS)
+            Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id, take_first_six_min=True, take_frame_every_sec=True)
+            Frames = postporcess_video( Frames, len(Frames), FPS)
             label_pred, score_pred = model_video(Frames)
 
             list(zip(label_pred, score_pred))
 
             #print(target,'\n',label_pred, '\n')
             print(f"Target:    {target} \nPredicted: {label_pred} \nUrl: https://www.youtube.com/watch?v={youtube_video_id} \n---------------------------------------")
-        except:
+        except Exception as e:
+            print(e)
             print(f"Error: {youtube_video_id}")
-        
+
+
+Frames, N_FRAMES, FPS = get_video_frames(youtube_video_id, take_first_six_min=True, take_frame_every_sec=True)
+postporcess_video( Frames, len(Frames), FPS)
+
+Frames.shape

@@ -141,14 +141,12 @@ class YouTube8MFeatureExtractor(object):
             frame_rgb (np.array): shape (bs, n_frames, height, width, channels)
             apply_pca (bool, optional):  Defaults to True
         Returns:
-            video_embeding_level (np.array): shape (bs, 1024)
+            video_embeding_level (np.array): shape (bs, n_frames, 1024)
         """
         
         frame_embeding_level = self.extract_frame_level_features(frame_rgb, apply_pca=apply_pca) # (bs, n_frames, 1024)
-        
-        # reduce frame axis
-        video_embeding_level = np.mean(frame_embeding_level, axis=1)
-        return video_embeding_level
+
+        return frame_embeding_level
 
     def apply_pca(self, frame_features):
         """Applies the YouTube8M PCA Transformation over `frame_features`.

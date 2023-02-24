@@ -66,6 +66,7 @@ def instance_dataloaders2(PATH_DATA, config, LEVEL_FEATURE):
         pytorch_dataset = YoutubeVideoDataset(list_train_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
     else:
         pytorch_dataset = YoutubeSegmentDataset(list_train_files, epochs=1, USE_FEATURES=config['Dataset']['USE_FEATURES'])
+    
     train_dataloader = DataLoader(pytorch_dataset, num_workers=0,
                         batch_size=config['Train']['bs'])#, collate_fn=collate_videos)
     
@@ -187,6 +188,7 @@ class TrainVideoTagging():
             # Use a percentage of the data selcted randomly
             if epoch == 0:
                 train_dataloader, test_dataloader = instance_dataloaders2( self.PATH_DATA, self.config, self.LEVEL_FEATURE)
+
             
             loss_train =  self.batch_forward(train_dataloader, MODE='train')
 
@@ -265,12 +267,12 @@ def main():
 
     # Arguments
     RUN_ID = None
-    LEVEL_FEATURE = 'frame' # 'video' or 'frame'
+    LEVEL_FEATURE = 'video' # 'video' or 'frame'
     FEATURES = ['rgb'] # ['audio', 'rgb']
     NAME_PROJECT = 'VideoTagging_YT8M_OurGlass'
     MODEL = 'RNNModelVideo'
     NAME_EXPERIMENT = f"{RUN_ID}_{MODEL}_{LEVEL_FEATURE}-level_{'_'.join(FEATURES)}"
-    NOTE = 'Baseline_dropout_0.5'
+    NOTE = 'Baseline_dropout_0.5_lr'
     DIR_DATASET = None
     
     
@@ -298,9 +300,15 @@ def main():
     }
     
     # Update config
+    config['Model']['model'] = MODEL
+    config['Model']['LEVEL_FEATURE'] = LEVEL_FEATURE
+    
     config['Dataset']['USE_FEATURES'] = FEATURES
     config['Dataset']['PATH_DATA'] = PATH_DATA.__str__()
-    config['Model']['model'] = MODEL
+    
+    config['Tracking']['NOTE'] = NOTE
+    config['Tracking']['NAME_PROJECT'] = NAME_PROJECT
+    config['Tracking']['NAME_EXPERIMENT'] = NAME_EXPERIMENT
         
     print(f"Config;\n--------------------\n{config}\n")
 
